@@ -1,0 +1,332 @@
+openapi: 3.1.0
+info:
+  title: API Components
+  description: Reusable OpenAPI Components Related to API Domain Objects
+  version: 1.0.0
+paths: {}
+components:
+  parameters:
+    OffsetQueryParameter:
+      in: query
+      name: offset
+      required: false
+      schema:
+        type: integer
+        default: 0
+      description: The number of items to skip before starting to collect the result set
+
+    LimitQueryParameter:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        default: 100
+      description: The maximum number of items to return in the result set
+
+  schemas:
+    Uuid:
+      title: UUID
+      description: String representation of a valid v4 or v6 UUID
+      type: string
+      format: uuid
+      example: 16f68a20-2d0d-494a-82fb-b526d5cea439
+
+    Link:
+      title: Link
+      description: >
+        Link Object represents a hyperlink from the containing resource to a URI.
+      type: object
+      required:
+        - href
+      properties:
+        href:
+          description: >
+            The "href" property is REQUIRED. Its value is either a URI
+            ([RFC3986](https://datatracker.ietf.org/doc/html/rfc3986))
+            or a URI Template ([RFC6570](https://datatracker.ietf.org/doc/html/rfc6570)).
+            If the value is a URI Template then the
+            Link Object SHOULD have a "templated" attribute whose value is true.
+          type: string
+          example: https://example.com/resource/12345
+        templated:
+          description: >
+            The "templated" property is OPTIONAL. Its value is boolean and SHOULD
+            be true when the Link Object's "href" property is a URI Template. Its
+            value SHOULD be considered false if it is undefined or not `true`.
+          type: boolean
+        type:
+          description: >
+            The "type" property is OPTIONAL. Its value is a string used as a hint
+            to indicate the media type expected when dereferencing the target resource.
+          type: string
+        deprecation:
+          description: >
+            The "deprecation" property is OPTIONAL.Its presence indicates that the
+            link is to be deprecated (i.e. removed) at a future date.  Its value is
+            a URL that SHOULD provide further information about the deprecation. A
+            client SHOULD provide some notification, for example, by logging a
+            warning message, whenever it traverses over a link that has this
+            property.  The notification SHOULD include the deprecation property's
+            value so that a client maintainer can easily find information about the
+            deprecation.
+          type: string
+        name:
+          description: >
+            The "name" property is OPTIONAL. Its value MAY be used as a secondary
+            key for selecting Link Objects which share the same relation type.
+          type: string
+        profile:
+          description: >
+            The "profile" property is OPTIONAL. Its value is a string which is a
+            URI that hints about the profile (as defined by
+            [I-D.wilde-profile-link](https://datatracker.ietf.org/doc/html/draft-kelly-json-hal#ref-I-D.wilde-profile-link))
+            of the target resource.
+          type: string
+        title:
+          description: >
+            The "title" property is OPTIONAL. Its value is a string and is intended
+            for labelling the link with a human-readable identifier, as defined by
+            [RFC5988](https://datatracker.ietf.org/doc/html/rfc5988).
+          type: string
+        hreflang:
+          description: >
+            The "hreflang" property is OPTIONAL. Its value is a string and is
+            intended for indicating the language of the target resource, as defined
+            by [RFC5988](https://datatracker.ietf.org/doc/html/rfc5988).
+          type: string
+
+    TitledLink:
+      allOf:
+        - $ref: "#/components/schemas/Link"
+        - description: >
+            Link Object represents a hyperlink from the containing resource to a URI,
+            with a human readable title.
+        - type: object
+          required:
+            - href
+            - title
+          properties:
+            href:
+              description: >
+                The "href" property is REQUIRED. Its value is either a URI
+                ([RFC3986](https://datatracker.ietf.org/doc/html/rfc3986))
+                or a URI Template ([RFC6570](https://datatracker.ietf.org/doc/html/rfc6570)).
+                If the value is a URI Template then the
+                Link Object SHOULD have a "templated" attribute whose value is true.
+              type: string
+              example: https://example.com/resource/12345
+            title:
+              description: >
+                This title should be used anywhere a human-readable identifier
+                is needed for the resource. For example, simple list view,
+                dropdown selects, a view of a related resource that is linked
+                to this resource.
+              type: string
+
+    TemplatedLink:
+      allOf:
+        - $ref: "#/components/schemas/Link"
+        - description: >
+            Link Object represents a hyperlink from the containing resource to a URI,
+            with a human readable title.
+        - type: object
+          required:
+            - href
+            - templated
+          properties:
+            href:
+              description: >
+                The "href" property is REQUIRED. Its value is either a URI
+                ([RFC3986](https://datatracker.ietf.org/doc/html/rfc3986))
+                or a URI Template ([RFC6570](https://datatracker.ietf.org/doc/html/rfc6570)).
+                If the value is a URI Template then the
+                Link Object SHOULD have a "templated" attribute whose value is true.
+              type: string
+              example: https://example.com/resource/12345
+            templated:
+              description: >
+                This title should be used anywhere a human-readable identifier
+                is needed for the resource. For example, simple list view,
+                dropdown selects, a view of a related resource that is linked
+                to this resource.
+              type: boolean
+
+    SelfLink:
+      allOf:
+        - $ref: "#/components/schemas/Link"
+        - description: >
+            The URI that refers to the *full* hypermedia representation of this
+            specific resource.
+
+    TitledSelfLink:
+      allOf:
+        - $ref: "#/components/schemas/TitledLink"
+        - description: >
+            The URI that refers to the *full* hypermedia representation of this
+            specific resource, with a human readable title.
+
+    ProblemDetails:
+      title: Problem Details
+      description: Base Schema for RFC 7807 Problem Details
+      externalDocs:
+        description: RFC 7807
+        url: https://tools.ietf.org/html/rfc7807
+      type: object
+      required:
+        - type
+        - title
+        - detail
+        - status
+      properties:
+        type:
+          type: string
+          description: A URI for the *general* error type, pointing to
+            human-readable documentation of that given type.
+          example: "https://httpstatuses.io/404"
+        title:
+          type: string
+          description: A short, human-readable title for the *general* error type.
+          example: "Bad Request"
+        status:
+          type: integer
+          description: The HTTP status code generated by the server for this occurrence.
+          example: 400
+        detail:
+          type: string
+          description: A human-readable description of the *specific* error.
+          example: The request contains an invalid "npa" parameter.
+        instance:
+          type: string
+          description: A URI that refers to the specific occurrence of the error.
+          example: "/api/errors/12345"
+        log_trace:
+          allOf:
+            - $ref: "#/components/schemas/Uuid"
+            - description: A unique identifier for this specific occurrence of the error.
+              example: "0193b23e-376b-72ab-9f69-f24e80a476e1"
+
+    ValidationProblemDetails:
+      title: Validation Problem Details
+      description: Schema for RFC 7807 Problem Details for Request Validation Errors
+      required:
+        - type
+        - title
+        - detail
+        - invalid-params
+      properties:
+        type:
+          type: string
+          description: A URI for the *general* error type, pointing to
+            human-readable documentation of that given type.
+          example: "https://httpstatuses.io/404"
+        title:
+          type: string
+          description: A short, human-readable title for the *general* error type.
+          example: "Bad Request"
+        status:
+          type: integer
+          description: The HTTP status code generated by the server for this occurrence.
+          example: 400
+        detail:
+          type: string
+          description: A human-readable description of the *specific* error.
+          example: The request contains an invalid "npa" parameter.
+        instance:
+          type: string
+          description: A URI that refers to the specific occurrence of the error.
+          example: "/api/errors/12345"
+        log_trace:
+          allOf:
+            - $ref: "#/components/schemas/Uuid"
+            - description: A unique identifier for this specific occurrence of the error.
+              example: "0193b23e-376b-72ab-9f69-f24e80a476e1"
+        invalid-params:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: The unique parameter name of the invalid value
+                type: string
+                example: username
+              reason:
+                description: A human-readable explanation of why the value was invalid
+                type: string
+                example: The username is already taken, please choose again.
+      example:
+        type: https://httpstatuses.io/400
+        title: Bad Request
+        detail: "One or more validation errors occurred and the request cannot be processed."
+        invalid-params:
+          - name: email
+            reason: The email address provided is not valid.
+          - name: listings_taken
+            reason: This number cannot exceed the number of Listing Appointments.
+
+  responses:
+    BadRequest:
+      description: >
+        The resource could not be created because one or more of the request
+        parameters were invalid or a required request parameter was missing.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ValidationProblemDetails"
+
+    NotAuthenticated:
+      description: >
+        The endpoint was requested without being associated with an authenticated
+        member user account.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            log_trace: "0193b23e-376b-72ab-9f69-f24e80a476e1"
+            type: "https://httpstatuses.io/401"
+            title: Unauthorized
+            detail: The user associated with the request could not be authenticated.
+            status: 401
+
+    NotAuthorized:
+      description: >
+        The authenticated member does not have access to the requested resource.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            log_trace: "0193b23e-376b-72ab-9f69-f24e80a476e1"
+            type: "https://httpstatuses.io/403"
+            title: Forbidden
+            detail: The authenticated member does not have access to the requested resource.
+            status: 403
+
+    NotFound:
+      description: >
+        The server was unable to find a resource to match the queried parameters.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            log_trace: "0193b23e-376b-72ab-9f69-f24e80a476e1"
+            type: "https://httpstatuses.io/404"
+            title: Not Found
+            detail: Resource was not found.
+            status: 404
+
+    InternalServerError:
+      description: >
+        An unexpected error has occurred, and the server is unable to complete the request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            log_trace: "0193b23e-376b-72ab-9f69-f24e80a476e1"
+            type: "https://httpstatuses.io/500"
+            title: Internal Server Error
+            detail: An unexpected error has occurred, and the server is unable to complete the request.
+            status: 500
