@@ -1,135 +1,135 @@
 {
-    "name": "phoneburner/pinch-framework",
-    "description": "Pinch Framework",
-    "license": "MIT",
-    "authors": [
-        {
-            "email": "tim@phoneburner.com",
-            "name": "Tim Lytle"
-        },
-        {
-            "email": "andy@phoneburner.com",
-            "name": "Andy Snell"
-        }
-    ],
-    "type": "library",
-    "require": {
-        "php": "^8.4",
-        "ext-amqp": "*",
-        "ext-bcmath": "*",
-        "ext-ctype": "*",
-        "ext-curl": "*",
-        "ext-exif": "*",
-        "ext-gmp": "*",
-        "ext-iconv": "*",
-        "ext-igbinary": "*",
-        "ext-intl": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*",
-        "ext-pdo": "*",
-        "ext-pdo_mysql": "*",
-        "ext-random": "*",
-        "ext-redis": "*",
-        "ext-sodium": "*",
-        "ext-zip": "*",
-        "ext-zlib": "*",
-        "alek13/slack": "^2.3",
-        "aws/aws-sdk-php": "^3.351.3",
-        "crell/api-problem": "^3.7",
-        "crell/attributeutils": "^1.3",
-        "crell/serde": "^1.5.0",
-        "doctrine/dbal": "^4.3.0",
-        "doctrine/migrations": "^3.9.1",
-        "doctrine/orm": "^3.5.0",
-        "dragonmantank/cron-expression": "^3.4",
-        "eventsauce/eventsauce": "^3.7.1",
-        "eventsauce/message-repository-for-doctrine": "^1.2.1",
-        "filp/whoops": "^2.18.3",
-        "guzzlehttp/guzzle": "^7.9.3",
-        "guzzlehttp/psr7": "^2.7.1",
-        "laminas/laminas-diactoros": "^3.6.0",
-        "laminas/laminas-httphandlerrunner": "^2.12",
-        "league/flysystem": "^3.30.0",
-        "league/flysystem-aws-s3-v3": "^3.29",
-        "monolog/monolog": "^3.9.0",
-        "nesbot/carbon": "^2.73.0 || ^3.10.1",
-        "nikic/fast-route": "^1.3",
-        "phoneburner/api-handler": "0.0.1",
-        "phoneburner/http-tortilla": "0.0.1",
-        "phoneburner/link-tortilla": "0.0.1",
-        "phoneburner/pinch-component": "0.0.1",
-        "phoneburner/pinch-core": "0.0.1",
-        "psr/cache": "^3.0.0",
-        "psr/clock": "^1.0.0",
-        "psr/container": "^1.1.2 || ^2.0.2",
-        "psr/event-dispatcher": "^1.0.0",
-        "psr/http-client": "^1.0.3",
-        "psr/http-factory": "^1.1.0",
-        "psr/http-message": "^2.0.0",
-        "psr/http-server-handler": "^1.0.2",
-        "psr/http-server-middleware": "^1.0.2",
-        "psr/link": "^2.0.1",
-        "psr/log": "^3.0.2",
-        "psr/simple-cache": "^3.0.0",
-        "psy/psysh": "^0.12.9",
-        "ramsey/uuid": "^4.9.0",
-        "ramsey/uuid-doctrine": "^2.1",
-        "symfony/amazon-sqs-messenger": "^7.3",
-        "symfony/amqp-messenger": "^7.3.0",
-        "symfony/cache": "^7.3.1",
-        "symfony/console": "^7.3",
-        "symfony/doctrine-messenger": "^7.3",
-        "symfony/event-dispatcher": "^7.3.0",
-        "symfony/http-client": "^7.3.1",
-        "symfony/lock": "^7.3.0",
-        "symfony/mailer": "^7.3.1",
-        "symfony/messenger": "^7.3.1",
-        "symfony/mime": "^7.3.0",
-        "symfony/process": "^7.3",
-        "symfony/redis-messenger": "^7.3.0",
-        "symfony/scheduler": "^7.3.0",
-        "symfony/sendgrid-mailer": "^7.3.0",
-        "symfony/service-contracts": "^3.6"
+  "name": "phoneburner/pinch-framework",
+  "description": "Pinch Framework",
+  "license": "MIT",
+  "authors": [
+    {
+      "email": "tim@phoneburner.com",
+      "name": "Tim Lytle"
     },
-    "require-dev": {
-        "phoneburner/composer-replacements": "0.0.1",
-        "phoneburner/pinch-phpstan": "0.0.1",
-        "php-parallel-lint/php-parallel-lint": "^1.4",
-        "phpunit/phpunit": "^12.2.7"
-    },
-    "autoload": {
-        "files": [
-            "src/functions.php"
-        ],
-        "psr-4": {
-            "PhoneBurner\\Pinch\\Framework\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "PhoneBurner\\Pinch\\Framework\\Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "aws/aws-sdk-php": [
-            "S3",
-            "Sqs"
-        ],
-        "branch-alias": {
-            "dev-main": "1.0.x-dev"
-        }
-    },
-    "config": {
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "phpstan/extension-installer": true
-        },
-        "sort-packages": true
-    },
-    "provide": {
-        "psr/cache-implementation": "3.0",
-        "psr/clock-implementation": "1.0",
-        "psr/container-implementation": "2.0",
-        "psr/simple-cache-implementation": "3.0"
+    {
+      "email": "andy@phoneburner.com",
+      "name": "Andy Snell"
     }
+  ],
+  "type": "library",
+  "require": {
+    "php": "^8.4",
+    "ext-amqp": "*",
+    "ext-bcmath": "*",
+    "ext-ctype": "*",
+    "ext-curl": "*",
+    "ext-exif": "*",
+    "ext-gmp": "*",
+    "ext-iconv": "*",
+    "ext-igbinary": "*",
+    "ext-intl": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ext-random": "*",
+    "ext-redis": "*",
+    "ext-sodium": "*",
+    "ext-zip": "*",
+    "ext-zlib": "*",
+    "alek13/slack": "^2.3",
+    "aws/aws-sdk-php": "^3.351.3",
+    "crell/api-problem": "^3.7",
+    "crell/attributeutils": "^1.3",
+    "crell/serde": "^1.5.0",
+    "doctrine/dbal": "^4.3.0",
+    "doctrine/migrations": "^3.9.1",
+    "doctrine/orm": "^3.5.0",
+    "dragonmantank/cron-expression": "^3.4",
+    "eventsauce/eventsauce": "^3.7.1",
+    "eventsauce/message-repository-for-doctrine": "^1.2.1",
+    "filp/whoops": "^2.18.3",
+    "guzzlehttp/guzzle": "^7.9.3",
+    "guzzlehttp/psr7": "^2.7.1",
+    "laminas/laminas-diactoros": "^3.6.0",
+    "laminas/laminas-httphandlerrunner": "^2.12",
+    "league/flysystem": "^3.30.0",
+    "league/flysystem-aws-s3-v3": "^3.29",
+    "monolog/monolog": "^3.9.0",
+    "nesbot/carbon": "^2.73.0 || ^3.10.1",
+    "nikic/fast-route": "^1.3",
+    "phoneburner/api-handler": "^1.0.1",
+    "phoneburner/http-tortilla": "^2.0.0",
+    "phoneburner/link-tortilla": "^1.0.0",
+    "phoneburner/pinch-component": "^0.0.4",
+    "phoneburner/pinch-core": "^0.0.4",
+    "psr/cache": "^3.0.0",
+    "psr/clock": "^1.0.0",
+    "psr/container": "^1.1.2 || ^2.0.2",
+    "psr/event-dispatcher": "^1.0.0",
+    "psr/http-client": "^1.0.3",
+    "psr/http-factory": "^1.1.0",
+    "psr/http-message": "^2.0.0",
+    "psr/http-server-handler": "^1.0.2",
+    "psr/http-server-middleware": "^1.0.2",
+    "psr/link": "^2.0.1",
+    "psr/log": "^3.0.2",
+    "psr/simple-cache": "^3.0.0",
+    "psy/psysh": "^0.12.9",
+    "ramsey/uuid": "^4.9.0",
+    "ramsey/uuid-doctrine": "^2.1",
+    "symfony/amazon-sqs-messenger": "^7.3",
+    "symfony/amqp-messenger": "^7.3.0",
+    "symfony/cache": "^7.3.1",
+    "symfony/console": "^7.3",
+    "symfony/doctrine-messenger": "^7.3",
+    "symfony/event-dispatcher": "^7.3.0",
+    "symfony/http-client": "^7.3.1",
+    "symfony/lock": "^7.3.0",
+    "symfony/mailer": "^7.3.1",
+    "symfony/messenger": "^7.3.1",
+    "symfony/mime": "^7.3.0",
+    "symfony/process": "^7.3",
+    "symfony/redis-messenger": "^7.3.0",
+    "symfony/scheduler": "^7.3.0",
+    "symfony/sendgrid-mailer": "^7.3.0",
+    "symfony/service-contracts": "^3.6"
+  },
+  "require-dev": {
+    "phoneburner/composer-replacements": "^1.0.0",
+    "phoneburner/pinch-phpstan": "^0.0.4",
+    "php-parallel-lint/php-parallel-lint": "^1.4",
+    "phpunit/phpunit": "^12.2.7"
+  },
+  "autoload": {
+    "files": [
+      "src/functions.php"
+    ],
+    "psr-4": {
+      "PhoneBurner\\Pinch\\Framework\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PhoneBurner\\Pinch\\Framework\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "aws/aws-sdk-php": [
+      "S3",
+      "Sqs"
+    ],
+    "branch-alias": {
+      "dev-main": "0.1.x-dev"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    },
+    "sort-packages": true
+  },
+  "provide": {
+    "psr/cache-implementation": "3.0",
+    "psr/clock-implementation": "1.0",
+    "psr/container-implementation": "2.0",
+    "psr/simple-cache-implementation": "3.0"
+  }
 }
