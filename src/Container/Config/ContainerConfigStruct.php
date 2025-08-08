@@ -8,7 +8,6 @@ use PhoneBurner\Pinch\Component\App\ServiceProvider;
 use PhoneBurner\Pinch\Component\Configuration\ConfigStruct;
 use PhoneBurner\Pinch\Component\Configuration\Struct\ConfigStructArrayAccess;
 use PhoneBurner\Pinch\Component\Configuration\Struct\ConfigStructSerialization;
-use PhoneBurner\Pinch\Framework\ApplicationServiceProvider;
 
 final readonly class ContainerConfigStruct implements ConfigStruct
 {
@@ -20,7 +19,7 @@ final readonly class ContainerConfigStruct implements ConfigStruct
      */
     public function __construct(
         public bool $enable_deferred_service_registration = false,
-        public array $service_providers = [ApplicationServiceProvider::class],
+        public array $service_providers = [],
     ) {
     }
 }
