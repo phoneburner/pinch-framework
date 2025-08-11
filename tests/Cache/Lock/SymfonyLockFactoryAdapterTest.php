@@ -8,7 +8,7 @@ use PhoneBurner\Pinch\Framework\Cache\Lock\SymfonyLockAdapter;
 use PhoneBurner\Pinch\Framework\Cache\Lock\SymfonyLockFactoryAdapter;
 use PhoneBurner\Pinch\Framework\Cache\Lock\SymfonyNamedKey;
 use PhoneBurner\Pinch\Framework\Cache\Lock\SymfonyNamedKeyFactory;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

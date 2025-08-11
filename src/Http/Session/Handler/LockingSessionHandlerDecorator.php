@@ -11,7 +11,7 @@ use PhoneBurner\Pinch\Component\Http\Response\Exceptional\ServerErrorResponse;
 use PhoneBurner\Pinch\Component\Http\Session\SessionId;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionHandler;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionManager;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**

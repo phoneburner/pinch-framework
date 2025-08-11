@@ -10,7 +10,7 @@ use PhoneBurner\Pinch\Component\Configuration\Struct\ConfigStructSerialization;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionHandlerType;
 use PhoneBurner\Pinch\String\Encoding\Encoding;
 use PhoneBurner\Pinch\String\Serialization\Serializer;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 
 use const PhoneBurner\Pinch\Framework\APP_ROOT;
 

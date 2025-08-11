@@ -7,7 +7,7 @@ namespace PhoneBurner\Pinch\Framework\Http\Session\Handler;
 use PhoneBurner\Pinch\Attribute\Usage\Internal;
 use PhoneBurner\Pinch\Component\Http\Session\SessionId;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionHandler;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 
 #[Internal]
 final class RedisSessionHandler extends SessionHandler

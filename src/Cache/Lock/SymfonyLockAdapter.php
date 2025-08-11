@@ -7,7 +7,7 @@ namespace PhoneBurner\Pinch\Framework\Cache\Lock;
 use PhoneBurner\Pinch\Attribute\Usage\Internal;
 use PhoneBurner\Pinch\Component\Cache\Lock\Lock;
 use PhoneBurner\Pinch\Component\Cache\Lock\SharedLockMode;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use PhoneBurner\Pinch\Time\Timer\StopWatch;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;

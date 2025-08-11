@@ -7,7 +7,7 @@ namespace PhoneBurner\Pinch\Framework\Http\Emitter;
 use Laminas\HttpHandlerRunner\Emitter\EmitterInterface;
 use Laminas\HttpHandlerRunner\Emitter\SapiEmitterTrait;
 use PhoneBurner\Pinch\Component\Http\Response\ServerSentEventsResponse;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use Psr\Http\Message\ResponseInterface;
 
 class UnbufferedSapiStreamEmitter implements EmitterInterface

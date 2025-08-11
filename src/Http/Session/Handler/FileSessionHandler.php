@@ -11,7 +11,7 @@ use PhoneBurner\Pinch\Filesystem\FileWriter;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionHandler;
 use PhoneBurner\Pinch\Random\Randomizer;
 use PhoneBurner\Pinch\Time\Clock\Clock;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 
 use const PhoneBurner\Pinch\Framework\APP_ROOT;
 

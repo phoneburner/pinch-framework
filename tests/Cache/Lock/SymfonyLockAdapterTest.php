@@ -6,7 +6,7 @@ namespace PhoneBurner\Pinch\Framework\Tests\Cache\Lock;
 
 use PhoneBurner\Pinch\Component\Cache\Lock\SharedLockMode;
 use PhoneBurner\Pinch\Framework\Cache\Lock\SymfonyLockAdapter;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use PhoneBurner\Pinch\Time\Timer\StopWatch;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

@@ -8,7 +8,7 @@ use Maknz\Slack\Client;
 use Maknz\Slack\Message;
 use PhoneBurner\Pinch\Component\Cache\CacheKey;
 use PhoneBurner\Pinch\Component\Cache\Lock\LockFactory;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use Psr\Log\LoggerInterface;
 
 class SlackWebhookNotificationClient implements SlackNotificationClient

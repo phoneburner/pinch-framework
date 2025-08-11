@@ -6,7 +6,7 @@ namespace PhoneBurner\Pinch\Framework\Cache\Lock;
 
 use PhoneBurner\Pinch\Attribute\Usage\Internal;
 use PhoneBurner\Pinch\Component\Cache\Lock\LockFactory;
-use PhoneBurner\Pinch\Time\TimeInterval\TimeInterval;
+use PhoneBurner\Pinch\Time\Interval\TimeInterval;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Lock\LockFactory as SymfonyLockFactory;
