@@ -11,13 +11,15 @@ use PhoneBurner\Pinch\Component\App\DeferrableServiceProvider;
 use PhoneBurner\Pinch\Component\App\ServiceFactory\NewInstanceServiceFactory;
 use PhoneBurner\Pinch\Component\Cryptography\Natrium;
 use PhoneBurner\Pinch\Component\Http\Cookie\CookieJar;
+use PhoneBurner\Pinch\Component\Http\Message\RequestSerializer;
+use PhoneBurner\Pinch\Component\Http\Message\ResponseSerializer;
 use PhoneBurner\Pinch\Component\Http\Middleware\LazyMiddlewareRequestHandlerFactory;
 use PhoneBurner\Pinch\Component\Http\Middleware\MiddlewareRequestHandlerFactory;
 use PhoneBurner\Pinch\Component\Http\Middleware\ThrottleRequests;
 use PhoneBurner\Pinch\Component\Http\RateLimiter\NullRateLimiter;
 use PhoneBurner\Pinch\Component\Http\RateLimiter\RateLimiter;
-use PhoneBurner\Pinch\Component\Http\RequestFactory;
-use PhoneBurner\Pinch\Component\Http\RequestHandlerFactory;
+use PhoneBurner\Pinch\Component\Http\Request\RequestFactory as RequestFactoryContract;
+use PhoneBurner\Pinch\Component\Http\Request\RequestHandlerFactory;
 use PhoneBurner\Pinch\Component\Http\Response\Exceptional\TransformerStrategies\HtmlResponseTransformerStrategy;
 use PhoneBurner\Pinch\Component\Http\Response\Exceptional\TransformerStrategies\JsonResponseTransformerStrategy;
 use PhoneBurner\Pinch\Component\Http\Response\Exceptional\TransformerStrategies\TextResponseTransformerStrategy;
@@ -35,9 +37,12 @@ use PhoneBurner\Pinch\Framework\Http\Config\HttpConfigStruct;
 use PhoneBurner\Pinch\Framework\Http\Cookie\CookieEncrypter;
 use PhoneBurner\Pinch\Framework\Http\Cookie\Middleware\ManageCookies;
 use PhoneBurner\Pinch\Framework\Http\Emitter\MappingEmitter;
+use PhoneBurner\Pinch\Framework\Http\EventListener\WriteSerializedRequestToFile;
+use PhoneBurner\Pinch\Framework\Http\EventListener\WriteSerializedResponseToFile;
 use PhoneBurner\Pinch\Framework\Http\Middleware\CatchExceptionalResponses;
 use PhoneBurner\Pinch\Framework\Http\Middleware\TransformHttpExceptionResponses;
 use PhoneBurner\Pinch\Framework\Http\RateLimiter\RedisRateLimiter;
+use PhoneBurner\Pinch\Framework\Http\Request\RequestFactory;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\CspViolationReportRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\ErrorRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\LogoutRequestHandler;
@@ -104,6 +109,10 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             LogoutRequestHandler::class,
             RateLimiter::class,
             ThrottleRequests::class,
+            RequestSerializer::class,
+            ResponseSerializer::class,
+            WriteSerializedRequestToFile::class,
+            WriteSerializedResponseToFile::class,
         ];
     }
 
@@ -113,12 +122,22 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             Router::class => FastRouter::class,
             SessionManagerContract::class => SessionManager::class,
             RateLimiter::class => RedisRateLimiter::class,
+            RequestFactoryContract::class => RequestFactory::class,
         ];
     }
 
     #[\Override]
     public static function register(App $app): void
     {
+        $app->set(RequestSerializer::class, NewInstanceServiceFactory::singleton());
+        $app->set(ResponseSerializer::class, NewInstanceServiceFactory::singleton());
+        $app->set(JsonResponseTransformerStrategy::class, NewInstanceServiceFactory::singleton());
+        $app->set(HtmlResponseTransformerStrategy::class, NewInstanceServiceFactory::singleton());
+        $app->set(TextResponseTransformerStrategy::class, NewInstanceServiceFactory::singleton());
+        $app->set(ErrorRequestHandler::class, NewInstanceServiceFactory::singleton());
+        $app->set(FastRouteResultFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(StaticFileRequestHandler::class, NewInstanceServiceFactory::singleton());
+
         $app->set(
             HttpKernel::class,
             static fn(App $app): HttpKernel => new HttpKernel(
@@ -171,12 +190,6 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             ),
         );
 
-        $app->set(JsonResponseTransformerStrategy::class, NewInstanceServiceFactory::singleton());
-
-        $app->set(HtmlResponseTransformerStrategy::class, NewInstanceServiceFactory::singleton());
-
-        $app->set(TextResponseTransformerStrategy::class, NewInstanceServiceFactory::singleton());
-
         $app->set(
             CatchExceptionalResponses::class,
             static fn(App $app): CatchExceptionalResponses => new CatchExceptionalResponses(
@@ -200,8 +213,6 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             ),
         );
 
-        $app->set(ErrorRequestHandler::class, NewInstanceServiceFactory::singleton());
-
         $app->set(
             FastRouter::class,
             static fn(App $app): FastRouter => new FastRouter(
@@ -218,8 +229,6 @@ final class HttpServiceProvider implements DeferrableServiceProvider
                 $app->config->get('http.routing'),
             ),
         );
-
-        $app->set(FastRouteResultFactory::class, NewInstanceServiceFactory::singleton());
 
         $app->set(
             DefinitionList::class,
@@ -290,8 +299,6 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             ),
         );
 
-        $app->set(StaticFileRequestHandler::class, NewInstanceServiceFactory::singleton());
-
         $app->set(SessionHandler::class, new SessionHandlerServiceFactory());
 
         $app->set(
@@ -348,6 +355,24 @@ final class HttpServiceProvider implements DeferrableServiceProvider
                     $config->default_per_minute,
                 );
             },
+        );
+
+        $app->set(
+            WriteSerializedRequestToFile::class,
+            static fn(App $app): WriteSerializedRequestToFile => new WriteSerializedRequestToFile(
+                $app->get(RequestSerializer::class),
+                $app->get(LogTrace::class),
+                $app->get(LoggerInterface::class),
+            ),
+        );
+
+        $app->set(
+            WriteSerializedResponseToFile::class,
+            static fn(App $app): WriteSerializedResponseToFile => new WriteSerializedResponseToFile(
+                $app->get(ResponseSerializer::class),
+                $app->get(LogTrace::class),
+                $app->get(LoggerInterface::class),
+            ),
         );
     }
 }

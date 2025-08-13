@@ -102,12 +102,12 @@ class DoctrineMysqlMessageRepository implements MessageRepository
     /**
      * @return \Generator<Message>
      */
-    public function retrieveAllAfterVersion(AggregateRootId $id, int $aggregateRootVersion): \Generator
+    public function retrieveAllAfterVersion(AggregateRootId $id, int $aggregate_root_version): \Generator
     {
         $statement = $this->connection->prepare(\sprintf(self::SELECT_FORMAT, $this->table_name, self::CHUNK_SIZE));
         $statement->bindValue('aggregate_root_id', $this->aggregate_root_id_encoder->encodeId($id));
-        $aggregate_root_version = $aggregateRootVersion >= 0
-            ? $aggregateRootVersion
+        $aggregate_root_version = $aggregate_root_version >= 0
+            ? $aggregate_root_version
             : throw new \UnexpectedValueException('Invalid Aggregate Root Version');
 
         try {

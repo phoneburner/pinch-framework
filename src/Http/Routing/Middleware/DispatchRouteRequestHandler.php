@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhoneBurner\Pinch\Framework\Http\Routing\Middleware;
 
-use PhoneBurner\Pinch\Component\Http\RequestHandlerFactory;
+use PhoneBurner\Pinch\Component\Http\Request\RequestHandlerFactory;
 use PhoneBurner\Pinch\Component\Http\Routing\Match\RouteMatch;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

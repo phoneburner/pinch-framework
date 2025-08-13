@@ -202,8 +202,8 @@ final class FastRouterTest extends TestCase
         $collector->expects($this->exactly(2))
             ->method('addRoute')
             ->willReturnCallback(function (...$args) use ($expected_args_1, $expected_args_2): null {
-                static $callIndex = 0;
-                match ($callIndex++) {
+                static $call_index = 0;
+                match ($call_index++) {
                     0 => self::assertEquals($expected_args_1, $args, 'Arguments for first addRoute call mismatch'),
                     1 => self::assertEquals($expected_args_2, $args, 'Arguments for second addRoute call mismatch'),
                     default => self::fail('addRoute called more than twice'),

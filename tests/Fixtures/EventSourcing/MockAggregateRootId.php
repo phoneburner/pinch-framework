@@ -23,8 +23,8 @@ final class MockAggregateRootId implements AggregateRootId
         return $this->id !== '' ? $this->id : 'default-id';
     }
 
-    public static function fromString(string $aggregateRootId): static
+    public static function fromString(string $aggregate_root_id): static
     {
-        return new self($aggregateRootId);
+        return new self($aggregate_root_id);
     }
 }

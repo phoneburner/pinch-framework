@@ -37,21 +37,21 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     #[Test]
     public function convertToDatabaseValueFormatsUtcDateTimeWithoutChangingTimezone(): void
     {
-        $utc_date_time = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::Utc->timezone());
+        $utc_datetime = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::Utc->timezone());
 
-        self::assertSame('2023-01-15 10:30:45', $this->type->convertToDatabaseValue($utc_date_time, $this->platform));
+        self::assertSame('2023-01-15 10:30:45', $this->type->convertToDatabaseValue($utc_datetime, $this->platform));
     }
 
     #[Test]
     public function convertToDatabaseValueConvertsNonUtcDateTimeToUtc(): void
     {
         // Create a datetime in a non-UTC timezone
-        $non_utc_date_time = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::LosAngeles->timezone());
+        $non_utc_datetime = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::LosAngeles->timezone());
 
         // Expected result is the UTC equivalent
-        $expected = $non_utc_date_time->setTimezone(Tz::Utc->timezone())->format(AnsiSql::DATETIME);
+        $expected = $non_utc_datetime->setTimezone(Tz::Utc->timezone())->format(AnsiSql::DATETIME);
 
-        self::assertSame($expected, $this->type->convertToDatabaseValue($non_utc_date_time, $this->platform));
+        self::assertSame($expected, $this->type->convertToDatabaseValue($non_utc_datetime, $this->platform));
     }
 
     #[Test]
@@ -70,18 +70,18 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     #[Test]
     public function convertToPHPValueReturnsSameDateTimeImmutableForUtcInput(): void
     {
-        $utc_date_time = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::Utc->timezone());
+        $utc_datetime = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::Utc->timezone());
 
-        self::assertSame($utc_date_time, $this->type->convertToPHPValue($utc_date_time, $this->platform));
+        self::assertSame($utc_datetime, $this->type->convertToPHPValue($utc_datetime, $this->platform));
     }
 
     #[Test]
     public function convertToPHPValueConvertsNonUtcDateTimeImmutableToUtc(): void
     {
-        $non_utc_date_time = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::LosAngeles->timezone());
-        $expected = $non_utc_date_time->setTimezone(Tz::Utc->timezone());
+        $non_utc_datetime = new \DateTimeImmutable('2023-01-15 10:30:45', Tz::LosAngeles->timezone());
+        $expected = $non_utc_datetime->setTimezone(Tz::Utc->timezone());
 
-        $result = $this->type->convertToPHPValue($non_utc_date_time, $this->platform);
+        $result = $this->type->convertToPHPValue($non_utc_datetime, $this->platform);
 
         self::assertEquals($expected, $result);
         self::assertSame(0, $result->getOffset());
@@ -92,14 +92,14 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     #[Test]
     public function convertToPHPValueParsesStringUsingPlatformFormat(): void
     {
-        $date_time_string = '2023-01-15 10:30:45';
+        $datetime_string = '2023-01-15 10:30:45';
         $expected = \DateTimeImmutable::createFromFormat(
             AnsiSql::DATETIME,
-            $date_time_string,
+            $datetime_string,
             Tz::Utc->timezone(),
         );
 
-        $result = $this->type->convertToPHPValue($date_time_string, $this->platform);
+        $result = $this->type->convertToPHPValue($datetime_string, $this->platform);
 
         self::assertEquals($expected, $result);
         self::assertSame(0, $result->getOffset());
@@ -109,9 +109,9 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     public function convertToPHPValueFallsBackToDateTimeConstructorForInvalidFormat(): void
     {
         // A string that doesn't match the platform format but is still a valid datetime string
-        $date_time_string = '2023-01-15T10:30:45Z';
+        $datetime_string = '2023-01-15T10:30:45Z';
 
-        $result = $this->type->convertToPHPValue($date_time_string, $this->platform);
+        $result = $this->type->convertToPHPValue($datetime_string, $this->platform);
 
         self::assertInstanceOf(\DateTimeImmutable::class, $result);
         self::assertSame(0, $result->getOffset());
@@ -123,9 +123,9 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     {
         // A string that doesn't match the platform format but is still a valid datetime string
         // with a timezone offset that is not UTC
-        $date_time_string = '2025-07-21T16:11:45-05:00';
+        $datetime_string = '2025-07-21T16:11:45-05:00';
 
-        $result = $this->type->convertToPHPValue($date_time_string, $this->platform);
+        $result = $this->type->convertToPHPValue($datetime_string, $this->platform);
 
         self::assertInstanceOf(\DateTimeImmutable::class, $result);
         self::assertSame(0, $result->getOffset());

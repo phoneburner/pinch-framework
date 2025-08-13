@@ -58,8 +58,8 @@ final class AggregateRootMetadataTest extends TestCase
     #[Test]
     public function lookupReturnsMetadataFromAggregateRootInstance(): void
     {
-        $aggregateRoot = new MockAggregateRootWithMetadata();
-        $metadata = AggregateRootMetadata::lookup($aggregateRoot);
+        $aggregate_root = new MockAggregateRootWithMetadata();
+        $metadata = AggregateRootMetadata::lookup($aggregate_root);
 
         self::assertInstanceOf(AggregateRootMetadata::class, $metadata);
         self::assertSame(MockAggregateRootId::class, $metadata->id);
@@ -85,7 +85,7 @@ final class AggregateRootMetadataTest extends TestCase
     #[Test]
     public function lookupThrowsLogicExceptionWithInstanceWhenAttributeIsMissing(): void
     {
-        $aggregateRoot = new MockAggregateRootWithoutMetadata();
+        $aggregate_root = new MockAggregateRootWithoutMetadata();
 
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage(
@@ -96,7 +96,7 @@ final class AggregateRootMetadataTest extends TestCase
             ),
         );
 
-        AggregateRootMetadata::lookup($aggregateRoot);
+        AggregateRootMetadata::lookup($aggregate_root);
     }
 
     #[Test]
@@ -130,18 +130,18 @@ final class AggregateRootMetadataTest extends TestCase
     {
         $reflection = new \ReflectionClass(AggregateRootMetadata::class);
 
-        $idProperty = $reflection->getProperty('id');
-        $repositoryProperty = $reflection->getProperty('repository');
-        $tableProperty = $reflection->getProperty('table');
+        $id_property = $reflection->getProperty('id');
+        $repository_property = $reflection->getProperty('repository');
+        $table_property = $reflection->getProperty('table');
 
-        self::assertTrue($idProperty->isPublic());
-        self::assertTrue($repositoryProperty->isPublic());
-        self::assertTrue($tableProperty->isPublic());
+        self::assertTrue($id_property->isPublic());
+        self::assertTrue($repository_property->isPublic());
+        self::assertTrue($table_property->isPublic());
 
         // Properties should not be readonly (they're set in constructor)
-        self::assertFalse($idProperty->isReadOnly());
-        self::assertFalse($repositoryProperty->isReadOnly());
-        self::assertFalse($tableProperty->isReadOnly());
+        self::assertFalse($id_property->isReadOnly());
+        self::assertFalse($repository_property->isReadOnly());
+        self::assertFalse($table_property->isReadOnly());
     }
 
     #[Test]
@@ -184,28 +184,28 @@ final class AggregateRootMetadataTest extends TestCase
     #[Test]
     public function metadataWorksWithLongTableNames(): void
     {
-        $longTableName = 'very_long_table_name_for_testing_maximum_length_scenarios_in_database_table_naming';
+        $long_table_name = 'very_long_table_name_for_testing_maximum_length_scenarios_in_database_table_naming';
         $metadata = new AggregateRootMetadata(
             id: MockAggregateRootId::class,
             repository: MockAggregateRootRepository::class,
-            table: $longTableName,
+            table: $long_table_name,
         );
 
-        self::assertSame($longTableName, $metadata->table);
+        self::assertSame($long_table_name, $metadata->table);
     }
 
     #[Test]
     public function lookupExceptionMessageIncludesCorrectClassNames(): void
     {
-        $expectedClass = MockAggregateRootWithoutMetadata::class;
-        $expectedAttribute = AggregateRootMetadata::class;
+        $expected_class = MockAggregateRootWithoutMetadata::class;
+        $expected_attribute = AggregateRootMetadata::class;
 
         try {
-            AggregateRootMetadata::lookup($expectedClass);
+            AggregateRootMetadata::lookup($expected_class);
             self::fail('Expected LogicException to be thrown');
         } catch (\LogicException $e) {
-            self::assertStringContainsString($expectedClass, $e->getMessage());
-            self::assertStringContainsString($expectedAttribute, $e->getMessage());
+            self::assertStringContainsString($expected_class, $e->getMessage());
+            self::assertStringContainsString($expected_attribute, $e->getMessage());
             self::assertStringContainsString('does not have the', $e->getMessage());
         }
     }
@@ -218,8 +218,8 @@ final class AggregateRootMetadataTest extends TestCase
 
         self::assertCount(1, $attributes);
 
-        $attributeInstance = $attributes[0]->newInstance();
-        self::assertSame(\Attribute::TARGET_CLASS, $attributeInstance->flags);
+        $attribute_instance = $attributes[0]->newInstance();
+        self::assertSame(\Attribute::TARGET_CLASS, $attribute_instance->flags);
     }
 
     #[Test]
@@ -230,9 +230,9 @@ final class AggregateRootMetadataTest extends TestCase
 
         self::assertCount(1, $attributes);
 
-        $attributeInstance = $attributes[0]->newInstance();
+        $attribute_instance = $attributes[0]->newInstance();
         // Should not include IS_REPEATABLE flag
-        self::assertNotSame(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE, $attributeInstance->flags);
-        self::assertSame(\Attribute::TARGET_CLASS, $attributeInstance->flags);
+        self::assertNotSame(\Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE, $attribute_instance->flags);
+        self::assertSame(\Attribute::TARGET_CLASS, $attribute_instance->flags);
     }
 }

@@ -50,7 +50,7 @@ final class HttpClientServiceProvider implements DeferrableServiceProvider
 
         $app->set(
             HttpClient::class,
-            static fn(App $app): HttpClient => $app->get(HttpClientFactory::class)->make(),
+            static fn(App $app): HttpClient => $app->get(HttpClientFactory::class)->createHttpClient(),
         );
     }
 }

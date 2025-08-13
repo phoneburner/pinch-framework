@@ -50,9 +50,9 @@ final class RateLimitingConfigStructTest extends TestCase
 
         // Verify that properties cannot be modified
         $reflection = new \ReflectionClass($config);
-        $enabledProperty = $reflection->getProperty('enabled');
+        $enabled_property = $reflection->getProperty('enabled');
 
-        self::assertTrue($enabledProperty->isReadOnly());
+        self::assertTrue($enabled_property->isReadOnly());
     }
 
     #[Test]

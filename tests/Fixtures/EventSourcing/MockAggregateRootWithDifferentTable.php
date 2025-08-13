@@ -30,7 +30,7 @@ final class MockAggregateRootWithDifferentTable implements AggregateRoot
         return 1;
     }
 
-    public static function reconstituteFromEvents(AggregateRootId $aggregateRootId, object ...$events): static
+    public static function reconstituteFromEvents(AggregateRootId $aggregate_root_id, object ...$events): static
     {
         return new static();
     }
