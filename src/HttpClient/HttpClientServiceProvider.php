@@ -7,12 +7,18 @@ namespace PhoneBurner\Pinch\Framework\HttpClient;
 use PhoneBurner\Pinch\Attribute\Usage\Internal;
 use PhoneBurner\Pinch\Component\App\App;
 use PhoneBurner\Pinch\Component\App\DeferrableServiceProvider;
+use PhoneBurner\Pinch\Component\Http\Request\RequestFactory;
 use PhoneBurner\Pinch\Component\HttpClient\HttpClient;
 use PhoneBurner\Pinch\Component\HttpClient\HttpClientFactory;
 use PhoneBurner\Pinch\Component\HttpClient\Psr18ClientWrapper;
+use PhoneBurner\Pinch\Component\MessageBus\MessageBus;
+use PhoneBurner\Pinch\Framework\Http\MessageSignature\Rfc9421\HttpMessageSignatureFactory;
 use PhoneBurner\Pinch\Framework\HttpClient\Config\HttpClientConfigStruct;
+use PhoneBurner\Pinch\Framework\HttpClient\Webhook\MessageHandler\WebhookDeliveryMessageHandler;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Client\ClientInterface;
+
+use function PhoneBurner\Pinch\ghost;
 
 /**
  * Service provider for HTTP Client with Guzzle implementation
@@ -28,6 +34,7 @@ final class HttpClientServiceProvider implements DeferrableServiceProvider
             HttpClientFactory::class,
             HttpClient::class,
             ClientInterface::class,
+            WebhookDeliveryMessageHandler::class,
         ];
     }
 
@@ -59,6 +66,17 @@ final class HttpClientServiceProvider implements DeferrableServiceProvider
                     ...$config->extra_guzzle_options,
                 );
             },
+        );
+
+        $app->set(
+            WebhookDeliveryMessageHandler::class,
+            ghost(static fn (WebhookDeliveryMessageHandler $ghost): null => $ghost->__construct(
+                $app->get(HttpClientFactory::class),
+                $app->get(RequestFactory::class),
+                $app->get(HttpMessageSignatureFactory::class),
+                $app->get(MessageBus::class),
+                $app->get(EventDispatcherInterface::class),
+            )),
         );
     }
 }
