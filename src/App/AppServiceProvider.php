@@ -44,6 +44,7 @@ use PhoneBurner\Pinch\Framework\EventDispatcher\Config\EventDispatcherConfigStru
 use PhoneBurner\Pinch\Framework\HealthCheck\Config\HealthCheckConfigStruct;
 use PhoneBurner\Pinch\Framework\Http\Config\HttpConfigStruct;
 use PhoneBurner\Pinch\Framework\Http\HttpKernel;
+use PhoneBurner\Pinch\Framework\HttpClient\Config\HttpClientConfigStruct;
 use PhoneBurner\Pinch\Framework\Logging\Config\LoggingConfigStruct;
 use PhoneBurner\Pinch\Framework\Mailer\Config\MailerConfigStruct;
 use PhoneBurner\Pinch\Framework\MessageBus\Config\MessageBusConfigStruct;
@@ -76,6 +77,7 @@ final class AppServiceProvider implements ServiceProvider
         'event_dispatcher' => EventDispatcherConfigStruct::class,
         'health_check' => HealthCheckConfigStruct::class,
         'http' => HttpConfigStruct::class,
+        'http_client' => HttpClientConfigStruct::class,
         'logging' => LoggingConfigStruct::class,
         'mailer' => MailerConfigStruct::class,
         'message_bus' => MessageBusConfigStruct::class,
@@ -143,21 +145,29 @@ final class AppServiceProvider implements ServiceProvider
             default => throw new KernelError('Context is Not Defined or Supported'),
         }));
 
-        $app->set(Natrium::class, static function (App $app): Natrium {
-            $config = narrow(AppConfigStruct::class, $app->get(AppConfigStruct::class));
-            $key_chain = ghost(static fn (KeyChain $ghost): null => $ghost->__construct(
-                $config->key ?? throw new \LogicException('App Key Must Be Defined in Configuration'),
-            ));
-
-            return new Natrium(
-                $key_chain,
-                $app->get(Clock::class),
-                new Defaults(
-                    $config->symmetric_algorithm,
-                    $config->asymmetric_algorithm,
+        $app->set(
+            KeyChain::class,
+            ghost(static fn (KeyChain $ghost): null => $ghost->__construct(
+                $app->get(AppConfigStruct::class)->key ?? throw new \LogicException(
+                    'App Key Must Be Defined in Configuration',
                 ),
-            );
-        });
+            )),
+        );
+
+        $app->set(
+            Natrium::class,
+            ghost(static function (Natrium $ghost) use ($app): void {
+                $config = narrow(AppConfigStruct::class, $app->get(AppConfigStruct::class));
+                $ghost->__construct(
+                    $app->get(KeyChain::class),
+                    $app->get(Clock::class),
+                    new Defaults(
+                        $config->symmetric_algorithm,
+                        $config->asymmetric_algorithm,
+                    ),
+                );
+            }),
+        );
 
         $app->set(
             AttributeAnalyzer::class,

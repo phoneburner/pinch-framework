@@ -78,9 +78,9 @@ final class MailerServiceProvider implements DeferrableServiceProvider
 
         $app->set(
             MailerTestCommand::class,
-            static fn(App $app): MailerTestCommand => new MailerTestCommand(
+            ghost(static fn(MailerTestCommand $ghost): null => $ghost->__construct(
                 $app->get(TransportInterface::class),
-            ),
+            )),
         );
     }
 }

@@ -9,7 +9,8 @@ use PhoneBurner\Pinch\Component\App\App;
 use PhoneBurner\Pinch\Component\App\DeferrableServiceProvider;
 use PhoneBurner\Pinch\Component\HttpClient\HttpClient;
 use PhoneBurner\Pinch\Component\HttpClient\HttpClientFactory;
-use PhoneBurner\Pinch\Component\HttpClient\HttpClientWrapper;
+use PhoneBurner\Pinch\Component\HttpClient\Psr18ClientWrapper;
+use PhoneBurner\Pinch\Framework\HttpClient\Config\HttpClientConfigStruct;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Client\ClientInterface;
 
@@ -33,8 +34,8 @@ final class HttpClientServiceProvider implements DeferrableServiceProvider
     public static function bind(): array
     {
         return [
-            HttpClient::class => HttpClientWrapper::class,
-            ClientInterface::class => HttpClientWrapper::class,
+            HttpClient::class => Psr18ClientWrapper::class,
+            ClientInterface::class => Psr18ClientWrapper::class,
         ];
     }
 
@@ -50,7 +51,14 @@ final class HttpClientServiceProvider implements DeferrableServiceProvider
 
         $app->set(
             HttpClient::class,
-            static fn(App $app): HttpClient => $app->get(HttpClientFactory::class)->createHttpClient(),
+            static function (App $app): HttpClient {
+                $config = $app->get(HttpClientConfigStruct::class);
+                return $app->get(HttpClientFactory::class)->createHttpClient(
+                    $config->default_request_timeout_seconds,
+                    $config->default_connect_timeout_seconds,
+                    ...$config->extra_guzzle_options,
+                );
+            },
         );
     }
 }

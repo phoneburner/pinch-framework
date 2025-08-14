@@ -9,23 +9,23 @@ use PhoneBurner\Pinch\Component\Http\Domain\RateLimits;
 use PhoneBurner\Pinch\Component\Http\Event\RequestRateLimitExceeded;
 use PhoneBurner\Pinch\Component\Http\Event\RequestRateLimitUpdated;
 use PhoneBurner\Pinch\Framework\Http\RateLimiter\RedisRateLimiter;
+use PhoneBurner\Pinch\Time\Clock\StaticClock;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Clock\ClockInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Redis;
 
 final class RedisRateLimiterTest extends TestCase
 {
     private Redis&MockObject $redis;
-    private ClockInterface&MockObject $clock;
+    private StaticClock $clock;
     private EventDispatcherInterface&MockObject $event_dispatcher;
 
     protected function setUp(): void
     {
         $this->redis = $this->createMock(Redis::class);
-        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock = new StaticClock(new DateTimeImmutable('@1642636800'));
         $this->event_dispatcher = $this->createMock(EventDispatcherInterface::class);
     }
 
@@ -43,11 +43,6 @@ final class RedisRateLimiterTest extends TestCase
     #[Test]
     public function throttleAllowsWhenWithinLimits(): void
     {
-        $now = new DateTimeImmutable('@1642636800');
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
         $limits = new RateLimits(
             id: 'test-user',
             per_second: 10,
@@ -87,11 +82,6 @@ final class RedisRateLimiterTest extends TestCase
     #[Test]
     public function throttleBlocksWhenLimitsExceeded(): void
     {
-        $now = new DateTimeImmutable('@1642636800');
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
         $limits = new RateLimits(
             id: 'test-user',
             per_second: 1,
@@ -119,11 +109,6 @@ final class RedisRateLimiterTest extends TestCase
     #[Test]
     public function throttleUsesCustomKeyPrefix(): void
     {
-        $now = new DateTimeImmutable('@1642636800');
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
         $limits = new RateLimits(id: 'user-123');
 
         $this->event_dispatcher->expects($this->once())
@@ -148,11 +133,6 @@ final class RedisRateLimiterTest extends TestCase
     #[Test]
     public function throttleHandlesRedisFailureGracefully(): void
     {
-        $now = new DateTimeImmutable('@1642636800');
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
         $limits = new RateLimits(id: 'test-user');
 
         $this->event_dispatcher->expects($this->once())
@@ -176,11 +156,6 @@ final class RedisRateLimiterTest extends TestCase
     #[Test]
     public function throttleHandlesInvalidRedisResponse(): void
     {
-        $now = new DateTimeImmutable('@1642636800');
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
         $limits = new RateLimits(id: 'test-user');
 
         $this->event_dispatcher->expects($this->once())
@@ -201,11 +176,6 @@ final class RedisRateLimiterTest extends TestCase
     #[Test]
     public function throttleSetsCorrectResetTime(): void
     {
-        $now = new DateTimeImmutable('2022-01-20 14:30:00');
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
         $limits = new RateLimits(id: 'test-user');
 
         $this->event_dispatcher->expects($this->once())
@@ -219,7 +189,7 @@ final class RedisRateLimiterTest extends TestCase
         $rate_limiter = $this->createRateLimiter();
         $result = $rate_limiter->throttle($limits);
 
-        $expected_reset = new DateTimeImmutable('2022-01-20 14:31:00');
+        $expected_reset = new DateTimeImmutable('@1642636860');
         self::assertEquals($expected_reset, $result->reset_time);
     }
 }

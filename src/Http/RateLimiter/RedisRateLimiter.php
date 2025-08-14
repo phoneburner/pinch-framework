@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace PhoneBurner\Pinch\Framework\Http\RateLimiter;
 
 use DateTimeImmutable;
+use PhoneBurner\Pinch\Attribute\Usage\Experimental;
 use PhoneBurner\Pinch\Component\Http\Domain\RateLimits;
 use PhoneBurner\Pinch\Component\Http\Event\RequestRateLimitExceeded;
 use PhoneBurner\Pinch\Component\Http\Event\RequestRateLimitUpdated;
 use PhoneBurner\Pinch\Component\Http\RateLimiter\RateLimiter;
 use PhoneBurner\Pinch\Component\Http\RateLimiter\RateLimitResult;
-use Psr\Clock\ClockInterface;
+use PhoneBurner\Pinch\Time\Clock\Clock;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Redis;
 
@@ -21,13 +22,14 @@ use Redis;
  * Implements sliding window algorithm with hash structure for efficiency.
  * Provides accurate rate limiting even under high concurrency.
  */
+#[Experimental]
 final readonly class RedisRateLimiter implements RateLimiter
 {
     private readonly string $script_sha;
 
     public function __construct(
         private Redis $redis,
-        private ClockInterface $clock,
+        private Clock $clock,
         private EventDispatcherInterface $event_dispatcher,
         private string $key_prefix = 'rate_limit:',
     ) {

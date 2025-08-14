@@ -21,6 +21,7 @@ use Symfony\Component\Console\CommandLoader\CommandLoaderInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface as SymfonyDispatcherInterface;
 
 use function PhoneBurner\Pinch\ghost;
+use function PhoneBurner\Pinch\proxy;
 use function PhoneBurner\Pinch\Type\narrow;
 
 class ConsoleApplicationServiceFactory implements ServiceFactory
@@ -41,16 +42,19 @@ class ConsoleApplicationServiceFactory implements ServiceFactory
         $application->setCatchExceptions($app->environment->context !== Context::Http);
         $application->setCatchErrors(false);
 
-        OrmConsoleRunner::addCommands($application, $app->get(EntityManagerProvider::class));
-        /** @phpstan-ignore staticMethod.internalClass */
-        MigrationConsoleRunner::addCommands($application, DependencyFactory::fromConnection(
+        $connection_loader = ghost(fn(ExistingConnection $ghost): null => $ghost->__construct($app->get(Connection::class)));
+        $dependency_factory = proxy(static fn(DependencyFactory $proxy): DependencyFactory => DependencyFactory::fromConnection(
             new ConfigurationArray([
                 'table_storage' => $default_connection->migrations->table_storage,
                 'migrations_paths' => $default_connection->migrations->migrations_paths,
             ]),
-            ghost(fn(ExistingConnection $ghost): null => $ghost->__construct($app->get(Connection::class))),
+            $connection_loader,
             $app->get(LoggerInterface::class),
         ));
+
+        /** @phpstan-ignore staticMethod.internalClass */
+        MigrationConsoleRunner::addCommands($application, $dependency_factory);
+        OrmConsoleRunner::addCommands($application, $app->get(EntityManagerProvider::class));
 
         return $application;
     }

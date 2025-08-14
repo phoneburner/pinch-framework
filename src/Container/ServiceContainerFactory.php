@@ -21,6 +21,7 @@ use PhoneBurner\Pinch\Framework\Database\DatabaseServiceProvider;
 use PhoneBurner\Pinch\Framework\EventDispatcher\EventDispatcherServiceProvider;
 use PhoneBurner\Pinch\Framework\HealthCheck\HealthCheckServiceProvider;
 use PhoneBurner\Pinch\Framework\Http\HttpServiceProvider;
+use PhoneBurner\Pinch\Framework\HttpClient\HttpClientServiceProvider;
 use PhoneBurner\Pinch\Framework\Logging\LoggingServiceProvider;
 use PhoneBurner\Pinch\Framework\Mailer\MailerServiceProvider;
 use PhoneBurner\Pinch\Framework\MessageBus\MessageBusServiceProvider;
@@ -38,15 +39,16 @@ class ServiceContainerFactory implements ServiceContainerFactoryContract
      */
     public const array FRAMEWORK_PROVIDERS = [
         AppServiceProvider::class,
-        MessageBusServiceProvider::class,
         CacheServiceProvider::class,
         ConsoleServiceProvider::class,
         DatabaseServiceProvider::class,
         EventDispatcherServiceProvider::class,
         HealthCheckServiceProvider::class,
         HttpServiceProvider::class,
+        HttpClientServiceProvider::class,
         LoggingServiceProvider::class,
         MailerServiceProvider::class,
+        MessageBusServiceProvider::class,
         NotifierServiceProvider::class,
         SchedulerServiceProvider::class,
         StorageServiceProvider::class,

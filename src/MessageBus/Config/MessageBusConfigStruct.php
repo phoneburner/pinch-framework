@@ -15,8 +15,8 @@ final readonly class MessageBusConfigStruct implements ConfigStruct
 
     /**
      * @param array<string, BusConfigStruct> $bus
-     * @param array<class-string, array<class-string>> $handlers
-     * @param array<class-string, array<string>> $routing // messages not mapped to a transport are handled synchronously.
+     * @param array<class-string, list<class-string>> $handlers
+     * @param array<class-string, list<string>> $routing // messages not mapped to a transport are handled synchronously.
      */
     public function __construct(
         public array $bus = [],

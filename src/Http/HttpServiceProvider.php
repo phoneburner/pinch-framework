@@ -9,12 +9,15 @@ use PhoneBurner\Pinch\Attribute\Usage\Internal;
 use PhoneBurner\Pinch\Component\App\App;
 use PhoneBurner\Pinch\Component\App\DeferrableServiceProvider;
 use PhoneBurner\Pinch\Component\App\ServiceFactory\NewInstanceServiceFactory;
+use PhoneBurner\Pinch\Component\Cryptography\KeyManagement\KeyChain;
 use PhoneBurner\Pinch\Component\Cryptography\Natrium;
 use PhoneBurner\Pinch\Component\Http\Cookie\CookieJar;
 use PhoneBurner\Pinch\Component\Http\Message\RequestSerializer;
 use PhoneBurner\Pinch\Component\Http\Message\ResponseSerializer;
+use PhoneBurner\Pinch\Component\Http\MessageSignature\HttpMessageSignatureFactory as HttpMessageSignatureFactoryContract;
 use PhoneBurner\Pinch\Component\Http\Middleware\LazyMiddlewareRequestHandlerFactory;
 use PhoneBurner\Pinch\Component\Http\Middleware\MiddlewareRequestHandlerFactory;
+use PhoneBurner\Pinch\Component\Http\Middleware\NullThrottleRequests;
 use PhoneBurner\Pinch\Component\Http\Middleware\ThrottleRequests;
 use PhoneBurner\Pinch\Component\Http\RateLimiter\NullRateLimiter;
 use PhoneBurner\Pinch\Component\Http\RateLimiter\RateLimiter;
@@ -32,13 +35,13 @@ use PhoneBurner\Pinch\Component\Http\Routing\Router;
 use PhoneBurner\Pinch\Component\Http\Session\SessionHandler;
 use PhoneBurner\Pinch\Component\Http\Session\SessionManager as SessionManagerContract;
 use PhoneBurner\Pinch\Component\Logging\LogTrace;
-use PhoneBurner\Pinch\Framework\Database\Redis\RedisManager;
 use PhoneBurner\Pinch\Framework\Http\Config\HttpConfigStruct;
 use PhoneBurner\Pinch\Framework\Http\Cookie\CookieEncrypter;
 use PhoneBurner\Pinch\Framework\Http\Cookie\Middleware\ManageCookies;
 use PhoneBurner\Pinch\Framework\Http\Emitter\MappingEmitter;
 use PhoneBurner\Pinch\Framework\Http\EventListener\WriteSerializedRequestToFile;
 use PhoneBurner\Pinch\Framework\Http\EventListener\WriteSerializedResponseToFile;
+use PhoneBurner\Pinch\Framework\Http\MessageSignature\Rfc9421\HttpMessageSignatureFactory;
 use PhoneBurner\Pinch\Framework\Http\Middleware\CatchExceptionalResponses;
 use PhoneBurner\Pinch\Framework\Http\Middleware\TransformHttpExceptionResponses;
 use PhoneBurner\Pinch\Framework\Http\RateLimiter\RedisRateLimiter;
@@ -57,7 +60,6 @@ use PhoneBurner\Pinch\Framework\Http\Routing\Middleware\DispatchRouteRequestHand
 use PhoneBurner\Pinch\Framework\Http\Session\SessionHandlerServiceFactory;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionManager;
 use PhoneBurner\Pinch\Time\Clock\Clock;
-use Psr\Clock\ClockInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
@@ -123,6 +125,7 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             SessionManagerContract::class => SessionManager::class,
             RateLimiter::class => RedisRateLimiter::class,
             RequestFactoryContract::class => RequestFactory::class,
+            HttpMessageSignatureFactoryContract::class => HttpMessageSignatureFactory::class,
         ];
     }
 
@@ -176,9 +179,9 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             RequestHandlerInterface::class,
             static fn(App $app): RequestHandlerInterface => $app->get(MiddlewareRequestHandlerFactory::class)->queue(
                 narrow(RequestHandlerInterface::class, $app->get(
-                    $app->config->get('http.routing.fallback_request_handler') ?? NotFoundRequestHandler::class,
+                    $app->get(HttpConfigStruct::class)->routing->fallback_handler ?: NotFoundRequestHandler::class,
                 )),
-                $app->config->get('http.middleware') ?? [],
+                $app->get(HttpConfigStruct::class)->middleware,
             ),
         );
 
@@ -186,7 +189,7 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             TransformHttpExceptionResponses::class,
             static fn(App $app): TransformHttpExceptionResponses => new TransformHttpExceptionResponses(
                 $app->get(LogTrace::class),
-                $app->config->get('http.exceptional_responses.default_transformer') ?: TextResponseTransformerStrategy::class,
+                $app->get(HttpConfigStruct::class)->exceptional_response_default_transformer ?: TextResponseTransformerStrategy::class,
             ),
         );
 
@@ -226,7 +229,7 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             FastRouteDispatcherFactory::class,
             static fn(App $app): FastRouteDispatcherFactory => new FastRouteDispatcherFactory(
                 $app->get(LoggerInterface::class),
-                $app->config->get('http.routing'),
+                $app->get(HttpConfigStruct::class)->routing,
             ),
         );
 
@@ -234,21 +237,23 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             DefinitionList::class,
             static fn(App $app): DefinitionList => LazyConfigDefinitionList::makeFromCallable(...\array_map(
                 static fn(string $provider): RouteProvider => narrow(RouteProvider::class, new $provider()),
-                $app->config->get('http.routing.route_providers') ?? [],
+                $app->get(HttpConfigStruct::class)->routing->route_providers ?? [],
             )),
         );
 
         $app->set(
             ListRoutesCommand::class,
-            static fn(App $app): ListRoutesCommand => new ListRoutesCommand($app->get(DefinitionList::class)),
+            static fn(App $app): ListRoutesCommand => new ListRoutesCommand(
+                $app->get(DefinitionList::class),
+            ),
         );
 
         $app->set(
             CacheRoutesCommand::class,
-            static fn(App $app): CacheRoutesCommand => new CacheRoutesCommand(
+            ghost(static fn(CacheRoutesCommand $ghost): null => $ghost->__construct(
                 $app->config,
                 $app->get(FastRouter::class),
-            ),
+            )),
         );
 
         $app->set(
@@ -295,7 +300,7 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             static fn(App $app): LogoutRequestHandler => new LogoutRequestHandler(
                 $app->get(SessionManager::class),
                 $app->get(EventDispatcherInterface::class),
-                $app->config->get('http.logout_redirect_url') ?? LogoutRequestHandler::DEFAULT_REDIRECT,
+                $app->get(HttpConfigStruct::class)->logout_redirect_url ?: LogoutRequestHandler::DEFAULT_REDIRECT,
             ),
         );
 
@@ -303,76 +308,76 @@ final class HttpServiceProvider implements DeferrableServiceProvider
 
         $app->set(
             SessionManager::class,
-            static fn(App $app): SessionManager => new SessionManager(
+            ghost(static fn(SessionManager $ghost): null => $ghost->__construct(
                 $app->get(SessionHandler::class),
-                $app->config->get('http.session'),
+                $app->get(HttpConfigStruct::class)->session,
                 $app->get(Natrium::class),
                 $app->get(LoggerInterface::class),
-            ),
+            )),
         );
 
         $app->set(
             RateLimiter::class,
             static function (App $app): RateLimiter {
                 $config = $app->get(HttpConfigStruct::class)->global_rate_limiting;
-                if (! $config?->enabled || $config->rate_limiter_class === NullRateLimiter::class) {
-                    return new NullRateLimiter(
-                        $app->get(ClockInterface::class),
+                $rate_limiter_class = $config?->enabled ? $config->rate_limiter_class : NullRateLimiter::class;
+
+                return match ($rate_limiter_class) {
+                    NullRateLimiter::class => ghost(static fn(NullRateLimiter $ghost): null => $ghost->__construct(
+                        $app->get(Clock::class),
                         $app->get(EventDispatcherInterface::class),
-                    );
-                }
-
-                if ($app->has(RedisManager::class) === false) {
-                    return new NullRateLimiter(
-                        $app->get(ClockInterface::class),
-                        $app->get(EventDispatcherInterface::class),
-                    );
-                }
-
-                $redis = $app->get(RedisManager::class)->connect();
-                $rate_limiter_class = $config->rate_limiter_class;
-
-                if ($rate_limiter_class === RedisRateLimiter::class) {
-                    return new RedisRateLimiter(
+                    )),
+                    RedisRateLimiter::class => ghost(static fn(RedisRateLimiter $ghost): null => $ghost->__construct(
                         $app->get(Redis::class),
-                        $app->get(ClockInterface::class),
+                        $app->get(Clock::class),
                         $app->get(EventDispatcherInterface::class),
-                    );
-                }
-
-                return new $rate_limiter_class();
+                    )),
+                    default => $app->get($rate_limiter_class),
+                };
             },
         );
 
         $app->set(
             ThrottleRequests::class,
             static function (App $app): ThrottleRequests {
-                $config = $app->config->get('http.rate_limiting');
+                $config = $app->get(HttpConfigStruct::class)->global_rate_limiting;
+                if ($config === null || $config->enabled === false) {
+                    return new NullThrottleRequests();
+                }
 
                 return new ThrottleRequests(
                     $app->get(RateLimiter::class),
-                    $config->default_per_second,
-                    $config->default_per_minute,
+                    $config->default_per_second_max,
+                    $config->default_per_minute_max,
                 );
             },
         );
 
         $app->set(
             WriteSerializedRequestToFile::class,
-            static fn(App $app): WriteSerializedRequestToFile => new WriteSerializedRequestToFile(
+            ghost(static fn(WriteSerializedRequestToFile $ghost): null => $ghost->__construct(
                 $app->get(RequestSerializer::class),
                 $app->get(LogTrace::class),
                 $app->get(LoggerInterface::class),
-            ),
+            )),
         );
 
         $app->set(
             WriteSerializedResponseToFile::class,
-            static fn(App $app): WriteSerializedResponseToFile => new WriteSerializedResponseToFile(
+            ghost(static fn(WriteSerializedResponseToFile $ghost): null => $ghost->__construct(
                 $app->get(ResponseSerializer::class),
                 $app->get(LogTrace::class),
                 $app->get(LoggerInterface::class),
-            ),
+            )),
+        );
+
+        $app->set(
+            HttpMessageSignatureFactory::class,
+            ghost(static fn(HttpMessageSignatureFactory $ghost): null => $ghost->__construct(
+                $app->get(Natrium::class),
+                $app->get(KeyChain::class),
+                $app->get(Clock::class),
+            )),
         );
     }
 }

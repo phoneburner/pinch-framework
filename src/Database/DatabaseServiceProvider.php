@@ -13,6 +13,7 @@ use PhoneBurner\Pinch\Component\App\App;
 use PhoneBurner\Pinch\Component\App\DeferrableServiceProvider;
 use PhoneBurner\Pinch\Component\Cache\Psr6\CacheItemPoolFactory as CacheItemPoolFactoryContract;
 use PhoneBurner\Pinch\Framework\Cache\CacheItemPoolFactory;
+use PhoneBurner\Pinch\Framework\Database\Config\DatabaseConfigStruct;
 use PhoneBurner\Pinch\Framework\Database\Doctrine\ConnectionFactory;
 use PhoneBurner\Pinch\Framework\Database\Doctrine\ConnectionProvider;
 use PhoneBurner\Pinch\Framework\Database\Doctrine\Orm\EntityManagerFactory;
@@ -59,6 +60,7 @@ final class DatabaseServiceProvider implements DeferrableServiceProvider
     #[\Override]
     public static function register(App $app): void
     {
+        /** Cannot make a ghost for \Redis because it's an internal class */
         $app->set(
             \Redis::class,
             static fn(App $app): \Redis => $app->get(RedisManager::class)->connect(),
@@ -67,7 +69,9 @@ final class DatabaseServiceProvider implements DeferrableServiceProvider
         $app->set(
             CachingRedisManager::class,
             ghost(static fn(CachingRedisManager $ghost): null => $ghost->__construct(
-                $app->config->get('database.redis'),
+                $app->get(DatabaseConfigStruct::class)->redis ?? throw new \LogicException(
+                    'Redis configuration not found',
+                ),
             )),
         );
 
@@ -77,7 +81,9 @@ final class DatabaseServiceProvider implements DeferrableServiceProvider
             ConnectionFactory::class,
             ghost(static fn(ConnectionFactory $ghost): null => $ghost->__construct(
                 $app->environment,
-                $app->config->get('database.doctrine'),
+                $app->get(DatabaseConfigStruct::class)->doctrine ?? throw new \LogicException(
+                    'Doctrine configuration not found',
+                ),
                 $app->get(CacheItemPoolFactoryContract::class),
                 $app->get(LoggerInterface::class),
             )),
