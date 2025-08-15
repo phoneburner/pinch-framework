@@ -34,6 +34,7 @@ use PhoneBurner\Pinch\Component\Http\Routing\RouteProvider;
 use PhoneBurner\Pinch\Component\Http\Routing\Router;
 use PhoneBurner\Pinch\Component\Http\Session\SessionHandler;
 use PhoneBurner\Pinch\Component\Http\Session\SessionManager as SessionManagerContract;
+use PhoneBurner\Pinch\Component\Http\Stream\StreamFactory;
 use PhoneBurner\Pinch\Component\Logging\LogTrace;
 use PhoneBurner\Pinch\Framework\Http\Config\HttpConfigStruct;
 use PhoneBurner\Pinch\Framework\Http\Cookie\CookieEncrypter;
@@ -61,6 +62,9 @@ use PhoneBurner\Pinch\Framework\Http\Session\SessionHandlerServiceFactory;
 use PhoneBurner\Pinch\Framework\Http\Session\SessionManager;
 use PhoneBurner\Pinch\Time\Clock\Clock;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
@@ -77,42 +81,47 @@ final class HttpServiceProvider implements DeferrableServiceProvider
     public static function provides(): array
     {
         return [
-            Router::class,
-            HttpKernel::class,
-            RequestFactory::class,
-            RequestHandlerFactory::class,
-            EmitterInterface::class,
-            MiddlewareRequestHandlerFactory::class,
-            RequestHandlerInterface::class,
-            TransformHttpExceptionResponses::class,
-            CatchExceptionalResponses::class,
-            NotFoundRequestHandler::class,
-            CspViolationReportRequestHandler::class,
-            ErrorRequestHandler::class,
-            FastRouter::class,
-            FastRouteDispatcherFactory::class,
-            FastRouteResultFactory::class,
-            DefinitionList::class,
-            ListRoutesCommand::class,
+            AttachRouteToRequest::class,
             CacheRoutesCommand::class,
+            CatchExceptionalResponses::class,
             CookieEncrypter::class,
             CookieJar::class,
-            ManageCookies::class,
-            AttachRouteToRequest::class,
+            CspViolationReportRequestHandler::class,
+            DefinitionList::class,
             DispatchRouteMiddleware::class,
             DispatchRouteRequestHandler::class,
-            StaticFileRequestHandler::class,
-            JsonResponseTransformerStrategy::class,
+            EmitterInterface::class,
+            ErrorRequestHandler::class,
+            FastRouteDispatcherFactory::class,
+            FastRouteResultFactory::class,
+            FastRouter::class,
             HtmlResponseTransformerStrategy::class,
-            TextResponseTransformerStrategy::class,
+            HttpKernel::class,
+            JsonResponseTransformerStrategy::class,
+            ListRoutesCommand::class,
+            LogoutRequestHandler::class,
+            ManageCookies::class,
+            MiddlewareRequestHandlerFactory::class,
+            NotFoundRequestHandler::class,
+            RateLimiter::class,
+            RequestFactory::class,
+            RequestFactoryContract::class,
+            RequestFactoryInterface::class,
+            RequestHandlerFactory::class,
+            RequestHandlerInterface::class,
+            RequestSerializer::class,
+            ResponseSerializer::class,
+            Router::class,
+            ServerRequestFactoryInterface::class,
             SessionHandler::class,
             SessionManager::class,
             SessionManagerContract::class,
-            LogoutRequestHandler::class,
-            RateLimiter::class,
+            StaticFileRequestHandler::class,
+            StreamFactory::class,
+            StreamFactoryInterface::class,
+            TextResponseTransformerStrategy::class,
             ThrottleRequests::class,
-            RequestSerializer::class,
-            ResponseSerializer::class,
+            TransformHttpExceptionResponses::class,
             WriteSerializedRequestToFile::class,
             WriteSerializedResponseToFile::class,
         ];
@@ -125,6 +134,9 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             SessionManagerContract::class => SessionManager::class,
             RateLimiter::class => RedisRateLimiter::class,
             RequestFactoryContract::class => RequestFactory::class,
+            RequestFactoryInterface::class => RequestFactory::class,
+            StreamFactoryInterface::class => StreamFactory::class,
+            ServerRequestFactoryInterface::class => RequestFactory::class,
             HttpMessageSignatureFactoryContract::class => HttpMessageSignatureFactory::class,
         ];
     }
@@ -140,6 +152,8 @@ final class HttpServiceProvider implements DeferrableServiceProvider
         $app->set(ErrorRequestHandler::class, NewInstanceServiceFactory::singleton());
         $app->set(FastRouteResultFactory::class, NewInstanceServiceFactory::singleton());
         $app->set(StaticFileRequestHandler::class, NewInstanceServiceFactory::singleton());
+        $app->set(RequestFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(StreamFactory::class, NewInstanceServiceFactory::singleton());
 
         $app->set(
             HttpKernel::class,
@@ -150,11 +164,6 @@ final class HttpServiceProvider implements DeferrableServiceProvider
                 $app->environment->stage,
                 $app->get(EventDispatcherInterface::class),
             ),
-        );
-
-        $app->set(
-            RequestFactory::class,
-            static fn(App $app): RequestFactory => new RequestFactory(),
         );
 
         $app->set(
