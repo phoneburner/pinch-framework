@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace PhoneBurner\Pinch\Framework\Logging;
 
+use Monolog\Processor\HostnameProcessor;
 use Monolog\Processor\PsrLogMessageProcessor;
+use Monolog\Processor\WebProcessor;
 use PhoneBurner\Pinch\Attribute\Usage\Internal;
 use PhoneBurner\Pinch\Component\App\App;
 use PhoneBurner\Pinch\Component\App\ServiceFactory\DeferredServiceFactory;
@@ -64,10 +66,16 @@ final class LoggingServiceProvider implements ServiceProvider
         );
 
         $app->set(PsrLogMessageProcessor::class, NewInstanceServiceFactory::singleton());
-
         $app->set(PhoneNumberProcessor::class, NewInstanceServiceFactory::singleton());
-
         $app->set(PsrMessageInterfaceProcessor::class, NewInstanceServiceFactory::singleton());
+        $app->set(HostnameProcessor::class, NewInstanceServiceFactory::singleton());
+        $app->set(WebProcessor::class, NewInstanceServiceFactory::singleton());
+        $app->set(JsonFormatterFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(LineFormatterFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(LogglyFormatterFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(TestHandlerFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(NoopHandlerFactory::class, NewInstanceServiceFactory::singleton());
+        $app->set(NullHandlerFactory::class, NewInstanceServiceFactory::singleton());
 
         $app->set(
             EnvironmentProcessor::class,
@@ -90,12 +98,6 @@ final class LoggingServiceProvider implements ServiceProvider
                 $app->get(LoggingConfigStruct::class)->formatter_factories,
             ),
         );
-
-        $app->set(JsonFormatterFactory::class, NewInstanceServiceFactory::singleton());
-
-        $app->set(LineFormatterFactory::class, NewInstanceServiceFactory::singleton());
-
-        $app->set(LogglyFormatterFactory::class, NewInstanceServiceFactory::singleton());
 
         $app->set(
             ContainerHandlerFactory::class,
@@ -139,12 +141,6 @@ final class LoggingServiceProvider implements ServiceProvider
                 $app->get(MonologFormatterFactory::class),
             ),
         );
-
-        $app->set(TestHandlerFactory::class, NewInstanceServiceFactory::singleton());
-
-        $app->set(NoopHandlerFactory::class, NewInstanceServiceFactory::singleton());
-
-        $app->set(NullHandlerFactory::class, NewInstanceServiceFactory::singleton());
 
         $app->set(
             LoggerExceptionHandler::class,

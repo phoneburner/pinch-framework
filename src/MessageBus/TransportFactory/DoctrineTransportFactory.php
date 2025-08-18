@@ -15,6 +15,8 @@ use function PhoneBurner\Pinch\ghost;
 
 class DoctrineTransportFactory implements TransportFactory
 {
+    public const string DEFAULT_FAILED_MESSAGE_TABLE = 'message_bus_failed_messages';
+
     public function __construct(
         private readonly ConnectionProvider $connection_provider,
         private readonly SerializerInterface $serializer,

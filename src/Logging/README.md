@@ -58,7 +58,7 @@ resort to prevent the application from crashing due to logging errors.
                 'level' => LogLevel::Info,
                 'bubble' => true, // Whether messages handled here should bubble up to other handlers
                 'handler_options' => [
-                    'filename' => storage_path('logs/app.log'),
+                    'filename' => storage_path('logs/app.jsonl'),
                     'max_files' => 7,
                     // other RotatingFileHandler specific options...
                 ],
