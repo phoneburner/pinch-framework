@@ -11,11 +11,8 @@ use PhoneBurner\Pinch\Component\App\ServiceContainer;
 use PhoneBurner\Pinch\Component\App\ServiceContainer\ServiceContainerAdapter;
 use PhoneBurner\Pinch\Component\App\ServiceContainerFactory as ServiceContainerFactoryContract;
 use PhoneBurner\Pinch\Component\App\ServiceProvider;
-use PhoneBurner\Pinch\Component\Configuration\Configuration;
-use PhoneBurner\Pinch\Framework\App\App;
 use PhoneBurner\Pinch\Framework\App\AppServiceProvider;
 use PhoneBurner\Pinch\Framework\Cache\CacheServiceProvider;
-use PhoneBurner\Pinch\Framework\Configuration\Environment;
 use PhoneBurner\Pinch\Framework\Console\ConsoleServiceProvider;
 use PhoneBurner\Pinch\Framework\Database\DatabaseServiceProvider;
 use PhoneBurner\Pinch\Framework\EventDispatcher\EventDispatcherServiceProvider;
@@ -58,7 +55,6 @@ class ServiceContainerFactory implements ServiceContainerFactoryContract
     {
         return ghost(static function (ServiceContainerAdapter $ghost) use ($app): void {
             $ghost->__construct($app);
-
             // Register the service providers in the order they are defined in the
             // framework an application, binding, deferring, and registering services.
             $deferral_enabled = (bool)$app->config->get('container.enable_deferred_service_registration');
@@ -68,15 +64,6 @@ class ServiceContainerFactory implements ServiceContainerFactoryContract
                     default => $ghost->register($provider),
                 };
             }
-
-            // Register the App, Configuration, and Environment instances after the
-            // service providers have been registered to ensure that they are not
-            // accidentally overridden by a service provider definition.
-            $ghost->set(Configuration::class, $app->config);
-            $ghost->set(Environment::class, $app->environment);
-            $ghost->set(ServiceContainer::class, $ghost);
-            $ghost->set(AppContract::class, $app);
-            $ghost->set(App::class, $app);
         });
     }
 

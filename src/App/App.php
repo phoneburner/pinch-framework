@@ -9,6 +9,8 @@ use PhoneBurner\Pinch\Component\App\Event\ApplicationBootstrap;
 use PhoneBurner\Pinch\Component\App\Event\ApplicationTeardown;
 use PhoneBurner\Pinch\Component\App\ServiceContainer;
 use PhoneBurner\Pinch\Component\App\ServiceContainerFactory as ServiceContainerFactoryContract;
+use PhoneBurner\Pinch\Component\App\ServiceFactory\GhostServiceFactory;
+use PhoneBurner\Pinch\Component\App\ServiceFactory\ProxyServiceFactory;
 use PhoneBurner\Pinch\Component\Configuration\Configuration;
 use PhoneBurner\Pinch\Component\Configuration\ConfigurationFactory as ConfigurationFactoryContract;
 use PhoneBurner\Pinch\Component\Configuration\Environment as EnvironmentContract;
@@ -205,5 +207,25 @@ final class App implements AppContract
         OverrideCollection|null $overrides = null,
     ): mixed {
         return $this->services->call($object, $method, $overrides);
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $id,
+     * @param \Closure(T): void|\Closure(T): null $initializer
+     */
+    public function ghost(string $id, \Closure $initializer): void
+    {
+        $this->services->set($id, new GhostServiceFactory($id, $initializer));
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $id,
+     * @param \Closure(T): T $factory
+     */
+    public function proxy(string $id, \Closure $factory): void
+    {
+        $this->services->set($id, new ProxyServiceFactory($id, $factory));
     }
 }

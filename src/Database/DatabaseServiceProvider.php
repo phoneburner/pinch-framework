@@ -22,7 +22,6 @@ use PhoneBurner\Pinch\Framework\Database\Redis\CachingRedisManager;
 use PhoneBurner\Pinch\Framework\Database\Redis\RedisManager;
 use Psr\Log\LoggerInterface;
 
-use function PhoneBurner\Pinch\ghost;
 use function PhoneBurner\Pinch\proxy;
 
 /**
@@ -66,28 +65,22 @@ final class DatabaseServiceProvider implements DeferrableServiceProvider
             static fn(App $app): \Redis => $app->get(RedisManager::class)->connect(),
         );
 
-        $app->set(
-            CachingRedisManager::class,
-            ghost(static fn(CachingRedisManager $ghost): null => $ghost->__construct(
-                $app->get(DatabaseConfigStruct::class)->redis ?? throw new \LogicException(
-                    'Redis configuration not found',
-                ),
-            )),
-        );
+        $app->ghost(CachingRedisManager::class, static fn(CachingRedisManager $ghost): null => $ghost->__construct(
+            $app->get(DatabaseConfigStruct::class)->redis ?? throw new \LogicException(
+                'Redis configuration not found',
+            ),
+        ));
 
         $app->set(ConnectionProvider::class, new ConnectionProvider($app));
 
-        $app->set(
-            ConnectionFactory::class,
-            ghost(static fn(ConnectionFactory $ghost): null => $ghost->__construct(
-                $app->environment,
-                $app->get(DatabaseConfigStruct::class)->doctrine ?? throw new \LogicException(
-                    'Doctrine configuration not found',
-                ),
-                $app->get(CacheItemPoolFactoryContract::class),
-                $app->get(LoggerInterface::class),
-            )),
-        );
+        $app->ghost(ConnectionFactory::class, static fn(ConnectionFactory $ghost): null => $ghost->__construct(
+            $app->environment,
+            $app->get(DatabaseConfigStruct::class)->doctrine ?? throw new \LogicException(
+                'Doctrine configuration not found',
+            ),
+            $app->get(CacheItemPoolFactoryContract::class),
+            $app->get(LoggerInterface::class),
+        ));
 
         $app->set(
             Connection::class,
@@ -96,16 +89,13 @@ final class DatabaseServiceProvider implements DeferrableServiceProvider
 
         $app->set(EntityManagerProvider::class, new EntityManagerProvider($app));
 
-        $app->set(
-            EntityManagerFactory::class,
-            ghost(static fn(EntityManagerFactory $ghost): null => $ghost->__construct(
-                $app->services,
-                $app->environment,
-                $app->config->get('database.doctrine'),
-                $app->get(DoctrineConnectionProvider::class),
-                $app->get(CacheItemPoolFactory::class),
-            )),
-        );
+        $app->ghost(EntityManagerFactory::class, static fn(EntityManagerFactory $ghost): null => $ghost->__construct(
+            $app->services,
+            $app->environment,
+            $app->config->get('database.doctrine'),
+            $app->get(DoctrineConnectionProvider::class),
+            $app->get(CacheItemPoolFactory::class),
+        ));
 
         /**
          * The EntityManager is a heavy object, so we'll defer its creation until it's needed.

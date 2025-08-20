@@ -1,0 +1,44 @@
+name: Code Quality Checks
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Pull Docker Images
+        run: |
+          docker pull ghcr.io/phoneburner/pinch-php
+
+      - name: Set Up Cache for Composer and Tooling
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-build-${{ github.run_id }} # intentional to allow cache updates
+          restore-keys: ${{ runner.os }}-build
+
+      - name: Install Composer Dependencies
+        run: |
+          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          composer update --no-progress --classmap-authoritative
+
+      - name: Run PHP Syntax Linter
+        run: |
+          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          php vendor/bin/parallel-lint . --no-progress  --show-deprecated --exclude vendor --exclude build
+
+      - name: Run PHPStan Static Analysis
+        run: |
+          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          php vendor/bin/phpstan analyze --no-progress --memory-limit=-1
+
+      - name: Run PHPUnit Tests
+        run: |
+          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          php vendor/bin/phpunit --no-progress

@@ -43,6 +43,7 @@ use PhoneBurner\Pinch\Framework\Http\Emitter\MappingEmitter;
 use PhoneBurner\Pinch\Framework\Http\EventListener\WriteSerializedRequestToFile;
 use PhoneBurner\Pinch\Framework\Http\EventListener\WriteSerializedResponseToFile;
 use PhoneBurner\Pinch\Framework\Http\MessageSignature\Rfc9421\HttpMessageSignatureFactory;
+use PhoneBurner\Pinch\Framework\Http\Middleware\AddCorrelationIdHeaderToResponse;
 use PhoneBurner\Pinch\Framework\Http\Middleware\CatchExceptionalResponses;
 use PhoneBurner\Pinch\Framework\Http\Middleware\TransformHttpExceptionResponses;
 use PhoneBurner\Pinch\Framework\Http\RateLimiter\RedisRateLimiter;
@@ -50,6 +51,8 @@ use PhoneBurner\Pinch\Framework\Http\Request\RequestFactory;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\CspViolationReportRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\ErrorRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\LogoutRequestHandler;
+use PhoneBurner\Pinch\Framework\Http\RequestHandler\LoopbackRequestHandler;
+use PhoneBurner\Pinch\Framework\Http\RequestHandler\PhpInfoRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\Routing\Command\CacheRoutesCommand;
 use PhoneBurner\Pinch\Framework\Http\Routing\Command\ListRoutesCommand;
 use PhoneBurner\Pinch\Framework\Http\Routing\FastRoute\FastRouteDispatcherFactory;
@@ -100,9 +103,11 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             JsonResponseTransformerStrategy::class,
             ListRoutesCommand::class,
             LogoutRequestHandler::class,
+            LoopbackRequestHandler::class,
             ManageCookies::class,
             MiddlewareRequestHandlerFactory::class,
             NotFoundRequestHandler::class,
+            PhpInfoRequestHandler::class,
             RateLimiter::class,
             RequestFactory::class,
             RequestFactoryContract::class,
@@ -195,6 +200,13 @@ final class HttpServiceProvider implements DeferrableServiceProvider
         );
 
         $app->set(
+            AddCorrelationIdHeaderToResponse::class,
+            static fn(App $app): AddCorrelationIdHeaderToResponse => new AddCorrelationIdHeaderToResponse(
+                $app->get(LogTrace::class),
+            ),
+        );
+
+        $app->set(
             TransformHttpExceptionResponses::class,
             static fn(App $app): TransformHttpExceptionResponses => new TransformHttpExceptionResponses(
                 $app->get(LogTrace::class),
@@ -257,20 +269,14 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             ),
         );
 
-        $app->set(
-            CacheRoutesCommand::class,
-            ghost(static fn(CacheRoutesCommand $ghost): null => $ghost->__construct(
-                $app->config,
-                $app->get(FastRouter::class),
-            )),
-        );
+        $app->ghost(CacheRoutesCommand::class, static fn(CacheRoutesCommand $ghost): null => $ghost->__construct(
+            $app->config,
+            $app->get(FastRouter::class),
+        ));
 
-        $app->set(
-            CookieEncrypter::class,
-            ghost(static fn(CookieEncrypter $ghost): null => $ghost->__construct(
-                $app->get(Natrium::class),
-            )),
-        );
+        $app->ghost(CookieEncrypter::class, static fn(CookieEncrypter $ghost): null => $ghost->__construct(
+            $app->get(Natrium::class),
+        ));
 
         $app->set(CookieJar::class, NewInstanceServiceFactory::singleton());
 
@@ -315,15 +321,12 @@ final class HttpServiceProvider implements DeferrableServiceProvider
 
         $app->set(SessionHandler::class, new SessionHandlerServiceFactory());
 
-        $app->set(
-            SessionManager::class,
-            ghost(static fn(SessionManager $ghost): null => $ghost->__construct(
-                $app->get(SessionHandler::class),
-                $app->get(HttpConfigStruct::class)->session,
-                $app->get(Natrium::class),
-                $app->get(LoggerInterface::class),
-            )),
-        );
+        $app->ghost(SessionManager::class, static fn(SessionManager $ghost): null => $ghost->__construct(
+            $app->get(SessionHandler::class),
+            $app->get(HttpConfigStruct::class)->session,
+            $app->get(Natrium::class),
+            $app->get(LoggerInterface::class),
+        ));
 
         $app->set(
             RateLimiter::class,
@@ -362,31 +365,31 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             },
         );
 
-        $app->set(
-            WriteSerializedRequestToFile::class,
-            ghost(static fn(WriteSerializedRequestToFile $ghost): null => $ghost->__construct(
-                $app->get(RequestSerializer::class),
-                $app->get(LogTrace::class),
-                $app->get(LoggerInterface::class),
-            )),
-        );
+        $app->ghost(WriteSerializedRequestToFile::class, static fn(WriteSerializedRequestToFile $ghost): null => $ghost->__construct(
+            $app->get(RequestSerializer::class),
+            $app->get(LogTrace::class),
+            $app->get(LoggerInterface::class),
+        ));
+
+        $app->ghost(WriteSerializedResponseToFile::class, static fn(WriteSerializedResponseToFile $ghost): null => $ghost->__construct(
+            $app->get(ResponseSerializer::class),
+            $app->get(LogTrace::class),
+            $app->get(LoggerInterface::class),
+        ));
+
+        $app->ghost(HttpMessageSignatureFactory::class, static fn(HttpMessageSignatureFactory $ghost): null => $ghost->__construct(
+            $app->get(Natrium::class),
+            $app->get(KeyChain::class),
+            $app->get(Clock::class),
+        ));
 
         $app->set(
-            WriteSerializedResponseToFile::class,
-            ghost(static fn(WriteSerializedResponseToFile $ghost): null => $ghost->__construct(
-                $app->get(ResponseSerializer::class),
-                $app->get(LogTrace::class),
-                $app->get(LoggerInterface::class),
-            )),
+            LoopbackRequestHandler::class,
+            static fn(App $app): LoopbackRequestHandler => new LoopbackRequestHandler(
+                $app->get(EventDispatcherInterface::class),
+            ),
         );
 
-        $app->set(
-            HttpMessageSignatureFactory::class,
-            ghost(static fn(HttpMessageSignatureFactory $ghost): null => $ghost->__construct(
-                $app->get(Natrium::class),
-                $app->get(KeyChain::class),
-                $app->get(Clock::class),
-            )),
-        );
+        $app->set(PhpInfoRequestHandler::class, NewInstanceServiceFactory::singleton());
     }
 }

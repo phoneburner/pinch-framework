@@ -50,6 +50,8 @@ final class CacheServiceProvider implements DeferrableServiceProvider
             CacheItemPoolFactoryContract::class,
             SymfonyNamedKeyFactory::class,
             LockFactory::class,
+            AppendOnlyCacheAdapter::class,
+            SymfonyLockFactoryAdapter::class,
         ];
     }
 
@@ -60,68 +62,55 @@ final class CacheServiceProvider implements DeferrableServiceProvider
             CacheInterface::class => CacheAdapter::class,
             CacheItemPoolInterface::class => CacheAdapter::class,
             CacheItemPoolFactoryContract::class => CacheItemPoolFactory::class,
+            AppendOnlyCache::class => AppendOnlyCacheAdapter::class,
+            LockFactory::class => SymfonyLockFactoryAdapter::class,
         ];
     }
 
     #[\Override]
     public static function register(App $app): void
     {
-        $app->set(
-            AppendOnlyCache::class,
-            ghost(static fn(AppendOnlyCacheAdapter $ghost): null => $ghost->__construct(
-                $app->get(CacheItemPoolFactory::class)->make(CacheDriver::File),
-            )),
-        );
+        $app->ghost(AppendOnlyCacheAdapter::class, static fn(AppendOnlyCacheAdapter $ghost): null => $ghost->__construct(
+            $app->get(CacheItemPoolFactory::class)->make(CacheDriver::File),
+        ));
 
-        $app->set(
-            CacheAdapter::class,
-            ghost(static fn(CacheAdapter $ghost): null => $ghost->__construct(
-                $app->get(CacheItemPoolFactory::class)->make(CacheDriver::Remote),
-            )),
-        );
+        $app->ghost(CacheAdapter::class, static fn(CacheAdapter $ghost): null => $ghost->__construct(
+            $app->get(CacheItemPoolFactory::class)->make(CacheDriver::Remote),
+        ));
 
-        $app->set(
-            InMemoryCache::class,
-            ghost(static fn(InMemoryCache $ghost): null => $ghost->__construct(
-                $app->get(CacheItemPoolFactory::class)->make(CacheDriver::Memory),
-            )),
-        );
+        $app->ghost(InMemoryCache::class, static fn(InMemoryCache $ghost): null => $ghost->__construct(
+            $app->get(CacheItemPoolFactory::class)->make(CacheDriver::Memory),
+        ));
 
-        $app->set(
-            CacheItemPoolFactory::class,
-            ghost(static fn(CacheItemPoolFactory $ghost): null => $ghost->__construct(
-                $app->environment,
-                $app->get(RedisManager::class),
-                $app->get(LoggerInterface::class),
-            )),
-        );
+        $app->ghost(CacheItemPoolFactory::class, static fn(CacheItemPoolFactory $ghost): null => $ghost->__construct(
+            $app->environment,
+            $app->get(RedisManager::class),
+            $app->get(LoggerInterface::class),
+        ));
 
         $app->set(SymfonyNamedKeyFactory::class, NewInstanceServiceFactory::singleton());
 
-        $app->set(
-            LockFactory::class,
-            ghost(static function (SymfonyLockFactoryAdapter $ghost) use ($app): void {
-                $store_driver = $app->config->get('cache.lock.store_driver');
-                $store_driver = match (true) {
-                    $app->environment->context === Context::Test, $store_driver === InMemoryStore::class => InMemoryStore::class,
-                    $app->environment->stage === BuildStage::Production, $store_driver === RedisStore::class => RedisStore::class,
-                    default => throw new InvalidConfiguration('Invalid Cache Lock Store Driver'),
-                };
+        $app->ghost(SymfonyLockFactoryAdapter::class, static function (SymfonyLockFactoryAdapter $ghost) use ($app): void {
+            $store_driver = $app->config->get('cache.lock.store_driver');
+            $store_driver = match (true) {
+                $app->environment->context === Context::Test, $store_driver === InMemoryStore::class => InMemoryStore::class,
+                $app->environment->stage === BuildStage::Production, $store_driver === RedisStore::class => RedisStore::class,
+                default => throw new InvalidConfiguration('Invalid Cache Lock Store Driver'),
+            };
 
-                $ghost->__construct(
-                    $app->get(SymfonyNamedKeyFactory::class),
-                    new SymfonyLockFactory(match ($store_driver) {
-                        InMemoryStore::class => new InMemoryStore(),
-                        RedisStore::class => ghost(static fn(RedisStore $ghost): null => $ghost->__construct(
-                            $app->get(RedisManager::class)->connect(),
-                        )),
-                    }),
-                );
+            $ghost->__construct(
+                $app->get(SymfonyNamedKeyFactory::class),
+                new SymfonyLockFactory(match ($store_driver) {
+                    InMemoryStore::class => new InMemoryStore(),
+                    RedisStore::class => ghost(static fn(RedisStore $ghost): null => $ghost->__construct(
+                        $app->get(RedisManager::class)->connect(),
+                    )),
+                }),
+            );
 
-                if ($app->environment->stage !== BuildStage::Production) {
-                    $ghost->setLogger($app->get(LoggerInterface::class));
-                }
-            }),
-        );
+            if ($app->environment->stage !== BuildStage::Production) {
+                $ghost->setLogger($app->get(LoggerInterface::class));
+            }
+        });
     }
 }

@@ -18,8 +18,6 @@ use PhoneBurner\Pinch\Framework\HttpClient\Webhook\MessageHandler\WebhookDeliver
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Client\ClientInterface;
 
-use function PhoneBurner\Pinch\ghost;
-
 /**
  * Service provider for HTTP Client with Guzzle implementation
  *
@@ -68,15 +66,15 @@ final class HttpClientServiceProvider implements DeferrableServiceProvider
             },
         );
 
-        $app->set(
+        $app->ghost(
             WebhookDeliveryMessageHandler::class,
-            ghost(static fn (WebhookDeliveryMessageHandler $ghost): null => $ghost->__construct(
+            static fn (WebhookDeliveryMessageHandler $ghost): null => $ghost->__construct(
                 $app->get(HttpClientFactory::class),
                 $app->get(RequestFactory::class),
                 $app->get(HttpMessageSignatureFactory::class),
                 $app->get(MessageBus::class),
                 $app->get(EventDispatcherInterface::class),
-            )),
+            ),
         );
     }
 }

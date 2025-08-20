@@ -23,7 +23,7 @@
         <ini name="memory_limit" value="512M"/>
     </php>
     <testsuites>
-        <testsuite name="application">
+        <testsuite name="framework">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

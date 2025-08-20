@@ -9,6 +9,8 @@ use PhoneBurner\Pinch\Component\Cryptography\Asymmetric\AsymmetricAlgorithm;
 use PhoneBurner\Pinch\Component\Cryptography\Symmetric\SharedKey;
 use PhoneBurner\Pinch\Component\Cryptography\Symmetric\SymmetricAlgorithm;
 use PhoneBurner\Pinch\Component\I18n\IsoLocale;
+use PhoneBurner\Pinch\Framework\App\ErrorHandling\ErrorHandler;
+use PhoneBurner\Pinch\Framework\App\ErrorHandling\ExceptionHandler;
 use PhoneBurner\Pinch\Time\TimeZone\Tz;
 
 interface AppConfigStruct extends ConfigStruct
@@ -35,5 +37,19 @@ interface AppConfigStruct extends ConfigStruct
 
     // phpcs:disable
     public AsymmetricAlgorithm $asymmetric_algorithm { get; }
+    // phpcs:enable
+
+    // phpcs:disable
+    /**
+     * @var class-string<ErrorHandler>
+     */
+    public string $uncaught_error_handler { get; }
+    // phpcs:enable
+
+    // phpcs:disable
+    /**
+     * @var class-string<ExceptionHandler>
+     */
+    public string $uncaught_exception_handler { get; }
     // phpcs:enable
 }

@@ -22,8 +22,6 @@ use PhoneBurner\Pinch\Time\Clock\Clock;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpTransport;
 
-use function PhoneBurner\Pinch\ghost;
-
 /**
  * @codeCoverageIgnore
  */
@@ -40,74 +38,56 @@ final class HealthCheckServiceProvider implements DeferrableServiceProvider
             MySqlHealthCheckService::class,
             PhpRuntimeHealthCheckService::class,
             RedisHealthCheckService::class,
+            AppHealthCheckBuilder::class,
         ];
     }
 
     public static function bind(): array
     {
-        return [];
+        return [
+            HealthCheckBuilder::class => AppHealthCheckBuilder::class,
+        ];
     }
 
     #[\Override]
     public static function register(App $app): void
     {
-         $app->set(
-             HealthCheckBuilder::class,
-             ghost(static fn(AppHealthCheckBuilder $ghost): null => $ghost->__construct(
-                 $app->get(Clock::class),
-                 $app->get(LoggerInterface::class),
-                 \array_map($app->services->get(...), $app->get(HealthCheckConfigStruct::class)->services),
-                 \trim($app->config->get('app.name') . ' API Health Check'),
-             )),
-         );
+         $app->ghost(AppHealthCheckBuilder::class, static fn(AppHealthCheckBuilder $ghost): null => $ghost->__construct(
+             $app->get(Clock::class),
+             $app->get(LoggerInterface::class),
+             \array_map($app->services->get(...), $app->get(HealthCheckConfigStruct::class)->services),
+             \trim($app->config->get('app.name') . ' API Health Check'),
+         ));
 
-         $app->set(
-             HealthCheckRequestHandler::class,
-             ghost(static fn(HealthCheckRequestHandler $ghost): null => $ghost->__construct(
-                 $app->get(HealthCheckBuilder::class),
-                 $app->get(LoggerInterface::class),
-             )),
-         );
+         $app->ghost(HealthCheckRequestHandler::class, static fn(HealthCheckRequestHandler $ghost): null => $ghost->__construct(
+             $app->get(HealthCheckBuilder::class),
+             $app->get(LoggerInterface::class),
+         ));
 
-         $app->set(
-             ReadyCheckRequestHandler::class,
-             ghost(static fn(ReadyCheckRequestHandler $ghost): null => $ghost->__construct(
-                 $app->get(LoggerInterface::class),
-             )),
-         );
+         $app->ghost(ReadyCheckRequestHandler::class, static fn(ReadyCheckRequestHandler $ghost): null => $ghost->__construct(
+             $app->get(LoggerInterface::class),
+         ));
 
-         $app->set(
-             AmqpTransportHealthCheckService::class,
-             ghost(static fn(AmqpTransportHealthCheckService $ghost): null => $ghost->__construct(
-                 $app->get(AmqpTransport::class),
-                 $app->get(LogTrace::class),
-                 $app->get(LoggerInterface::class),
-             )),
-         );
+         $app->ghost(AmqpTransportHealthCheckService::class, static fn(AmqpTransportHealthCheckService $ghost): null => $ghost->__construct(
+             $app->get(AmqpTransport::class),
+             $app->get(LogTrace::class),
+             $app->get(LoggerInterface::class),
+         ));
 
-         $app->set(
-             MySqlHealthCheckService::class,
-             ghost(static fn(MySqlHealthCheckService $ghost): null => $ghost->__construct(
-                 $app->get(Connection::class),
-                 $app->get(LogTrace::class),
-                 $app->get(LoggerInterface::class),
-             )),
-         );
+         $app->ghost(MySqlHealthCheckService::class, static fn(MySqlHealthCheckService $ghost): null => $ghost->__construct(
+             $app->get(Connection::class),
+             $app->get(LogTrace::class),
+             $app->get(LoggerInterface::class),
+         ));
 
-        $app->set(
-            PhpRuntimeHealthCheckService::class,
-            ghost(static fn(PhpRuntimeHealthCheckService $ghost): null => $ghost->__construct(
-                $app->get(LogTrace::class),
-            )),
-        );
+        $app->ghost(PhpRuntimeHealthCheckService::class, static fn(PhpRuntimeHealthCheckService $ghost): null => $ghost->__construct(
+            $app->get(LogTrace::class),
+        ));
 
-        $app->set(
-            RedisHealthCheckService::class,
-            ghost(static fn(RedisHealthCheckService $ghost): null => $ghost->__construct(
-                $app->get(RedisManager::class),
-                $app->get(LogTrace::class),
-                $app->get(LoggerInterface::class),
-            )),
-        );
+        $app->ghost(RedisHealthCheckService::class, static fn(RedisHealthCheckService $ghost): null => $ghost->__construct(
+            $app->get(RedisManager::class),
+            $app->get(LogTrace::class),
+            $app->get(LoggerInterface::class),
+        ));
     }
 }

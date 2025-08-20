@@ -39,19 +39,16 @@ final class MailerServiceProvider implements DeferrableServiceProvider
 
     public static function bind(): array
     {
-        return [];
+        return [Mailer::class => SymfonyMailerAdapter::class];
     }
 
     #[\Override]
     public static function register(App $app): void
     {
-        $app->set(
-            Mailer::class,
-            ghost(static fn(SymfonyMailerAdapter $ghost): null => $ghost->__construct(
-                $app->get(MailerInterface::class),
-                new EmailAddress($app->config->get('mailer.default_from_address')),
-            )),
-        );
+        $app->ghost(SymfonyMailerAdapter::class, static fn(SymfonyMailerAdapter $ghost): null => $ghost->__construct(
+            $app->get(MailerInterface::class),
+            new EmailAddress($app->config->get('mailer.default_from_address')),
+        ));
 
         $app->set(
             MailerInterface::class,
@@ -67,20 +64,14 @@ final class MailerServiceProvider implements DeferrableServiceProvider
             },
         );
 
-        $app->set(
-            MessageHandler::class,
-            ghost(static fn(MessageHandler $ghost): null => $ghost->__construct(
-                $app->get(TransportInterface::class),
-            )),
-        );
+        $app->ghost(MessageHandler::class, static fn(MessageHandler $ghost): null => $ghost->__construct(
+            $app->get(TransportInterface::class),
+        ));
 
         $app->set(TransportInterface::class, new TransportServiceFactory());
 
-        $app->set(
-            MailerTestCommand::class,
-            ghost(static fn(MailerTestCommand $ghost): null => $ghost->__construct(
-                $app->get(TransportInterface::class),
-            )),
-        );
+        $app->ghost(MailerTestCommand::class, static fn(MailerTestCommand $ghost): null => $ghost->__construct(
+            $app->get(TransportInterface::class),
+        ));
     }
 }
