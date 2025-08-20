@@ -25,20 +25,20 @@ jobs:
 
       - name: Install Composer Dependencies
         run: |
-          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          docker run --rm -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
           composer update --no-progress --classmap-authoritative
 
       - name: Run PHP Syntax Linter
         run: |
-          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          docker run --rm -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
           php vendor/bin/parallel-lint . --no-progress  --show-deprecated --exclude vendor --exclude build
 
       - name: Run PHPStan Static Analysis
         run: |
-          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          docker run --rm -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
           php vendor/bin/phpstan analyze --no-progress --memory-limit=-1
 
       - name: Run PHPUnit Tests
         run: |
-          docker run --rm -it -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
+          docker run --rm -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
           php vendor/bin/phpunit --no-progress
