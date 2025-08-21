@@ -9,9 +9,6 @@ parameters:
     tmpDir: build/phpstan
 
     paths:
-        - bin
-        - config
-        - public
         - src
         - tests
 
