@@ -15,8 +15,19 @@ parameters:
     ignoreErrors:
         - identifier: missingType.iterableValue
         - identifier: staticMethod.alreadyNarrowedType
+        - identifier: function.alreadyNarrowedType
         - identifier: method.internalClass
+        - identifier: new.internalClass
         - message: '#PhoneBurner\\Pinch\\Framework\\APP_ROOT not found.$#'
+
+        # Possible PHPStan Bug:
+        - identifier: deadCode.unreachable
+          path: packages/framework/src/bootstrap.php
+
+    dynamicConstantNames:
+        - PhoneBurner\Pinch\Framework\APP_ROOT
+
+    treatPhpDocTypesAsCertain: false
 
     # Strict Analysis
     # https://phpstan.org/config-reference#stricter-analysis
@@ -31,7 +42,12 @@ parameters:
     reportMaybesInPropertyPhpDocTypes: true
     reportStaticMethodSignatures: true
     reportUnmatchedIgnoredErrors: false
-    treatPhpDocTypesAsCertain: false
+    reportPossiblyNonexistentGeneralArrayOffset: false
+    reportPossiblyNonexistentConstantArrayOffset: false
+    reportAlwaysTrueInLastCondition: false
+    reportWrongPhpDocTypeInVarTag: false
+    reportAnyTypeWideningInVarTag: false
+    checkMissingOverrideMethodAttribute: false # update to true when Rector supports improves
 
     # Extension: Disallowed Calls For PHPStan
     # https://github.com/spaze/phpstan-disallowed-calls

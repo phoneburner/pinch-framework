@@ -6,6 +6,8 @@ namespace PhoneBurner\Pinch\Framework;
 
 use PhoneBurner\Pinch\Framework\App\App;
 
+use function PhoneBurner\Pinch\Type\narrow_nonempty_string;
+
 use const PhoneBurner\Pinch\Framework\APP_ROOT;
 
 function app(): App
@@ -37,7 +39,7 @@ function stage(
 }
 
 /**
- * Get full path relative to the application root
+ * Get the full path relative to the application root
  *
  * @return non-empty-string
  */
@@ -45,7 +47,7 @@ function path(string $path): string
 {
     \assert(\defined('\PhoneBurner\Pinch\Framework\APP_ROOT'), 'APP_ROOT must be defined');
     \assert(APP_ROOT !== '', 'APP_ROOT must not be empty');
-    return APP_ROOT . $path;
+    return narrow_nonempty_string(APP_ROOT . $path);
 }
 
 // Define a function that will be called when an undefined class is encountered

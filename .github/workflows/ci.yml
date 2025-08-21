@@ -41,4 +41,4 @@ jobs:
       - name: Run PHPUnit Tests
         run: |
           docker run --rm -v $PWD:/app --user=$(id -u):$(id -g) ghcr.io/phoneburner/pinch-php \
-          php vendor/bin/phpunit --no-progress
+          php -dzend.assertions=1 vendor/bin/phpunit --no-progress

@@ -6,8 +6,8 @@ namespace PhoneBurner\Pinch\Framework\Tests\Configuration;
 
 use PhoneBurner\Pinch\Component\Configuration\Environment;
 use PhoneBurner\Pinch\Component\Configuration\ImmutableConfiguration;
-use PhoneBurner\Pinch\Component\Tests\Fixtures\MockEnvironment;
 use PhoneBurner\Pinch\Framework\Configuration\ConfigurationFactory;
+use PhoneBurner\Pinch\Framework\Tests\Fixtures\MockEnvironment;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
