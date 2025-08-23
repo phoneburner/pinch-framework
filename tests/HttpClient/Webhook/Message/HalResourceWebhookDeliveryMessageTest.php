@@ -6,7 +6,7 @@ namespace PhoneBurner\Pinch\Framework\Tests\HttpClient\Webhook\Message;
 
 use Laminas\Diactoros\Uri;
 use PhoneBurner\Pinch\Component\HttpClient\Webhook\Message\WebhookDeliveryMessage;
-use PhoneBurner\Pinch\Framework\Http\Api\HalResource;
+use PhoneBurner\Pinch\Framework\Http\Api\Hal\HalResource;
 use PhoneBurner\Pinch\Framework\HttpClient\Webhook\Configuration\SimpleEventWebhookConfiguration;
 use PhoneBurner\Pinch\Framework\HttpClient\Webhook\Message\HalResourceWebhookDeliveryMessage;
 use PHPUnit\Framework\Attributes\DataProvider;

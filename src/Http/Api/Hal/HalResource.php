@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhoneBurner\Pinch\Framework\Http\Api;
+namespace PhoneBurner\Pinch\Framework\Http\Api\Hal;
 
 use Psr\Link\EvolvableLinkProviderInterface;
 use Psr\Link\LinkInterface;
