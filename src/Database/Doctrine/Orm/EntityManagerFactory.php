@@ -189,11 +189,11 @@ class EntityManagerFactory
 
         return $cache_driver ?? match ($type) {
             CacheType::Metadata, CacheType::Query => match ($this->environment->stage) {
-                BuildStage::Production, BuildStage::Integration => CacheDriver::File,
+                BuildStage::Production, BuildStage::Staging => CacheDriver::File,
                 default => CacheDriver::Memory,
             },
             CacheType::Result, CacheType::Entity => match ($this->environment->stage) {
-                BuildStage::Production, BuildStage::Integration => CacheDriver::Remote,
+                BuildStage::Production, BuildStage::Staging => CacheDriver::Remote,
                 default => CacheDriver::Memory,
             },
         };

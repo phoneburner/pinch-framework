@@ -25,17 +25,17 @@ function env(
     string $key,
     mixed $production = null,
     mixed $development = null,
-    mixed $integration = null,
+    mixed $staging = null,
 ): mixed {
-    return App::instance()->environment->env($key, $production, $development, $integration);
+    return App::instance()->environment->env($key, $production, $development, $staging);
 }
 
 function stage(
     mixed $production = null,
     mixed $development = null,
-    mixed $integration = null,
+    mixed $staging = null,
 ): mixed {
-    return App::instance()->environment->match($production, $development, $integration);
+    return App::instance()->environment->match($production, $development, $staging);
 }
 
 /**

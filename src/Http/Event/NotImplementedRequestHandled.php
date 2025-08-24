@@ -12,7 +12,7 @@ use PhoneBurner\Pinch\Component\Logging\LogLevel;
 use Psr\Http\Message\RequestInterface;
 
 #[Psr14Event]
-final readonly class LoopbackRequestHandled implements RequestAware, Loggable
+final readonly class NotImplementedRequestHandled implements RequestAware, Loggable
 {
     public function __construct(public RequestInterface $request)
     {
@@ -20,6 +20,6 @@ final readonly class LoopbackRequestHandled implements RequestAware, Loggable
 
     public function getLogEntry(): LogEntry
     {
-        return new LogEntry(LogLevel::Debug, 'Loopback Request Handled');
+        return new LogEntry(LogLevel::Debug, 'Not Implemented Request Handled');
     }
 }

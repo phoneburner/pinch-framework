@@ -106,7 +106,7 @@ class CacheItemPoolFactory implements CacheItemPoolFactoryContract, FileCacheIte
                 redis: $this->redis_manager->connect(),
                 namespace: self::DEFAULT_NAMESPACE,
                 marshaller: match ($this->environment->stage) {
-                    BuildStage::Production, BuildStage::Integration => new RemoteCacheMarshaller(Serializer::Igbinary),
+                    BuildStage::Production, BuildStage::Staging => new RemoteCacheMarshaller(Serializer::Igbinary),
                     BuildStage::Development => new RemoteCacheMarshaller(
                         serializer: Serializer::Php,
                         compress: false,

@@ -75,7 +75,7 @@ class ConnectionFactory
         }
 
         return $cache_driver ?? match ($this->environment->stage) {
-            BuildStage::Production, BuildStage::Integration => CacheDriver::Remote,
+            BuildStage::Production, BuildStage::Staging => CacheDriver::Remote,
             default => CacheDriver::Memory,
         };
     }

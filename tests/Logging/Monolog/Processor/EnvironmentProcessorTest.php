@@ -190,13 +190,13 @@ final class EnvironmentProcessorTest extends TestCase
     public static function provideBuildStages(): \Generator
     {
         yield 'Development' => [BuildStage::Development];
-        yield 'Integration' => [BuildStage::Integration];
+        yield 'Staging' => [BuildStage::Staging];
         yield 'Production' => [BuildStage::Production];
     }
 
     public static function provideNonDevelopmentStages(): \Generator
     {
-        yield 'Integration' => [BuildStage::Integration];
+        yield 'Staging' => [BuildStage::Staging];
         yield 'Production' => [BuildStage::Production];
     }
 }

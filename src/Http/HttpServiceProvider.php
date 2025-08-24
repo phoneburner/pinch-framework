@@ -52,6 +52,7 @@ use PhoneBurner\Pinch\Framework\Http\RequestHandler\CspViolationReportRequestHan
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\ErrorRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\LogoutRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\LoopbackRequestHandler;
+use PhoneBurner\Pinch\Framework\Http\RequestHandler\OpenApiRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\RequestHandler\PhpInfoRequestHandler;
 use PhoneBurner\Pinch\Framework\Http\Routing\Command\CacheRoutesCommand;
 use PhoneBurner\Pinch\Framework\Http\Routing\Command\ListRoutesCommand;
@@ -72,6 +73,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Redis;
 
+use function PhoneBurner\Pinch\Framework\path;
 use function PhoneBurner\Pinch\ghost;
 use function PhoneBurner\Pinch\Type\narrow;
 
@@ -107,6 +109,7 @@ final class HttpServiceProvider implements DeferrableServiceProvider
             ManageCookies::class,
             MiddlewareRequestHandlerFactory::class,
             NotFoundRequestHandler::class,
+            OpenApiRequestHandler::class,
             PhpInfoRequestHandler::class,
             RateLimiter::class,
             RequestFactory::class,
@@ -391,5 +394,14 @@ final class HttpServiceProvider implements DeferrableServiceProvider
         );
 
         $app->set(PhpInfoRequestHandler::class, NewInstanceServiceFactory::singleton());
+
+        $app->set(
+            OpenApiRequestHandler::class,
+            static fn(App $app): OpenApiRequestHandler => new OpenApiRequestHandler(
+                path('/resources/views/openapi.json'),
+                path('/resources/views/openapi.json'),
+                null, // do not enable YAML by default
+            ),
+        );
     }
 }

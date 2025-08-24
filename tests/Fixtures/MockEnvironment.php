@@ -38,9 +38,9 @@ class MockEnvironment implements Environment
         string $key,
         mixed $production = null,
         mixed $development = null,
-        mixed $integration = null,
+        mixed $staging = null,
     ): \UnitEnum|string|int|float|bool|null {
-        $value = self::cast($this->server[$key] ?? null) ?? $this->match($production, $development, $integration);
+        $value = self::cast($this->server[$key] ?? null) ?? $this->match($production, $development, $staging);
         \assert($value === null || \is_scalar($value) || $value instanceof \UnitEnum);
         return $value;
     }
@@ -49,19 +49,19 @@ class MockEnvironment implements Environment
         string $key,
         mixed $production = null,
         mixed $development = null,
-        mixed $integration = null,
+        mixed $staging = null,
     ): \UnitEnum|string|int|float|bool|null {
-        $value = self::cast($this->env[$key] ?? null) ?? $this->match($production, $development, $integration);
+        $value = self::cast($this->env[$key] ?? null) ?? $this->match($production, $development, $staging);
         \assert($value === null || \is_scalar($value) || $value instanceof \UnitEnum);
         return $value;
     }
 
-    public function match(mixed $production, mixed $development = null, mixed $integration = null): mixed
+    public function match(mixed $production, mixed $development = null, mixed $staging = null): mixed
     {
         return match ($this->stage) {
             BuildStage::Production => $production,
             BuildStage::Development => $development ?? $production,
-            BuildStage::Integration => $integration ?? $development ?? $production,
+            BuildStage::Staging => $staging ?? $development ?? $production,
         };
     }
 

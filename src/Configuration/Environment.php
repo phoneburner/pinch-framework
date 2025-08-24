@@ -48,26 +48,26 @@ final class Environment implements EnvironmentContract
         string $key,
         mixed $production = null,
         mixed $development = null,
-        mixed $integration = null,
+        mixed $staging = null,
     ): \UnitEnum|string|int|float|bool|null {
-        return self::cast($this->server[$key] ?? null) ?? $this->match($production, $development, $integration);
+        return self::cast($this->server[$key] ?? null) ?? $this->match($production, $development, $staging);
     }
 
     public function env(
         string $key,
         mixed $production = null,
         mixed $development = null,
-        mixed $integration = null,
+        mixed $staging = null,
     ): \UnitEnum|string|int|float|bool|null {
-        return self::cast($this->env[$key] ?? null) ?? $this->match($production, $development, $integration);
+        return self::cast($this->env[$key] ?? null) ?? $this->match($production, $development, $staging);
     }
 
-    public function match(mixed $production, mixed $development = null, mixed $integration = null): mixed
+    public function match(mixed $production, mixed $development = null, mixed $staging = null): mixed
     {
         return match ($this->stage) {
             BuildStage::Production => $production,
             BuildStage::Development => $development ?? $production,
-            BuildStage::Integration => $integration ?? $development ?? $production,
+            BuildStage::Staging => $staging ?? $development ?? $production,
         };
     }
 
